@@ -114,22 +114,22 @@ export default function DataTable<T extends Record<string, any>>({
                     >
                       {col.render
                         ? col.render(
-                            row[col.accessor],
-                            row,
-                            startIndex + rowIndex
-                          )
+                          row[col.accessor],
+                          row,
+                          startIndex + rowIndex
+                        )
                         : col.accessor === "no"
-                        ? startIndex + rowIndex + 1
-                        : Array.isArray(row[col.accessor])
-                        ? row[col.accessor]
-                            .map((item: any) =>
-                              typeof item === "string" ? item : item.name
-                            )
-                            .join(", ")
-                        : typeof row[col.accessor] === "object" &&
-                          row[col.accessor] !== null
-                        ? JSON.stringify(row[col.accessor])
-                        : row[col.accessor]}
+                          ? startIndex + rowIndex + 1
+                          : Array.isArray(row[col.accessor])
+                            ? row[col.accessor]
+                              .map((item: any) =>
+                                typeof item === "string" ? item : item.name
+                              )
+                              .join(", ")
+                            : typeof row[col.accessor] === "object" &&
+                              row[col.accessor] !== null
+                              ? JSON.stringify(row[col.accessor])
+                              : row[col.accessor]}
                     </td>
                   ))}
                 </tr>
