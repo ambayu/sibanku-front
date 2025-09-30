@@ -22,20 +22,14 @@ const menuGroups: MenuGroup[] = [
     label: "Menu Utama",
     items: [
       { name: "Dashboard", path: "/admin" },
-       {
-        name: "Pengaduan",
-        children: [
-          { name: "Daftar Pengaduan", path: "/admin/pengaduan" },
-        
-        ],
-      },
       {
-        name: "Gugatan",
-        children: [
-          { name: "Daftar Gugatan", path: "/admin/gugatan" },
-          { name: "Tambah Gugatan", path: "/admin/gugatan/tambah" },
-        ],
+        name: "Perkara",
+        children: [{
+          name: "Daftar Perkara",
+          path: "/admin/perkara"
+        }],
       },
+  
       {
         name: "Konsinyasi",
         children: [
@@ -51,10 +45,7 @@ const menuGroups: MenuGroup[] = [
     items: [
       {
         name: "User Management",
-        children: [
-          { name: "Daftar User", path: "/admin/users" },
-        
-        ],
+        children: [{ name: "Daftar User", path: "/admin/users" }],
       },
       {
         name: "Role and Permission",
@@ -94,7 +85,6 @@ export default function AppSidebar() {
     <aside
       className={`fixed top-0 left-0 h-full 
         bg-[#0B5C4D] text-white 
-        dark:bg-gray-900 dark:text-gray-100
         flex flex-col justify-between transition-all duration-300 z-50 
         ${getSidebarWidth()}
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
@@ -112,7 +102,7 @@ export default function AppSidebar() {
           {shouldShowText && (
             <div className="min-w-0 flex-1">
               <h1 className="text-base font-bold truncate">SIBANKUM</h1>
-              <p className="text-xs text-white/70 dark:text-gray-400 truncate">
+              <p className="text-xs text-white/70 truncate">
                 Sistem Informasi Bantuan Hukum
               </p>
             </div>
@@ -125,7 +115,7 @@ export default function AppSidebar() {
         {menuGroups.map((group, i) => (
           <div key={i} className="flex flex-col gap-1">
             {shouldShowText && group.label && (
-              <span className="text-[11px] uppercase font-semibold text-white/60 dark:text-gray-400 px-2 mb-1 tracking-wide">
+              <span className="text-[11px] uppercase font-semibold text-white/60 px-2 mb-1 tracking-wide">
                 {group.label}
               </span>
             )}
@@ -141,8 +131,8 @@ export default function AppSidebar() {
                       onClick={() => toggleDropdown(item.name)}
                       className={`flex items-center gap-2.5 px-3 py-2.5 rounded-l-full transition-all duration-200 w-full text-left text-sm
                         ${isOpen || active
-                          ? "bg-[#fffcf1] text-[#0B5C4D] font-medium dark:bg-gray-100 dark:text-gray-900"
-                          : "text-white/90 hover:bg-white/10 dark:hover:bg-gray-800"
+                          ? "bg-[#fffcf1] text-[#0B5C4D] font-medium"
+                          : "text-white/90 hover:bg-white/10"
                         }`}
                     >
                       <span
@@ -172,8 +162,8 @@ export default function AppSidebar() {
                               href={child.path}
                               className={`flex items-center gap-2.5 px-3 py-2 rounded-l-full transition-all duration-200 text-xs
                                 ${childActive
-                                  ? "bg-[#fffcf1] text-[#0B5C4D] font-medium dark:bg-gray-100 dark:text-gray-900"
-                                  : "text-white/80 hover:bg-white/10 dark:hover:bg-gray-800"
+                                  ? "bg-[#fffcf1] text-[#0B5C4D] font-medium"
+                                  : "text-white/80 hover:bg-white/10"
                                 }`}
                             >
                               <span
@@ -197,8 +187,8 @@ export default function AppSidebar() {
                   href={item.path!}
                   className={`flex items-center gap-2.5 px-3 py-2.5 rounded-l-full transition-all duration-200 text-sm
                     ${active
-                      ? "bg-[#fffcf1] text-[#0B5C4D] font-medium dark:bg-gray-100 dark:text-gray-900"
-                      : "text-white/90 hover:bg-white/10 dark:hover:bg-gray-800"
+                      ? "bg-[#fffcf1] text-[#0B5C4D] font-medium"
+                      : "text-white/90 hover:bg-white/10"
                     }`}
                   aria-current={active ? "page" : undefined}
                 >
@@ -222,13 +212,11 @@ export default function AppSidebar() {
       {/* Footer */}
       <div className="p-3 border-t border-white/10">
         <div className="flex items-center gap-2.5">
-          <UserCircle className="h-7 w-7 text-white/80 dark:text-gray-400 flex-shrink-0" />
+          <UserCircle className="h-7 w-7 text-white/80 flex-shrink-0" />
           {shouldShowText && (
             <div className="min-w-0 flex-1">
               <p className="font-medium text-xs truncate">PEMERINTAH KOTA MEDAN</p>
-              <p className="text-[11px] text-white/70 dark:text-gray-500 truncate">
-                (Pengguna Lainnya)
-              </p>
+              <p className="text-[11px] text-white/70 truncate">(Pengguna Lainnya)</p>
             </div>
           )}
         </div>

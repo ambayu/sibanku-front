@@ -9,14 +9,14 @@ type Column<T> = {
 };
 
 type DataTableProps<T> = {
-  data: T[];
+  data?: T[]; // bisa undefined saat fetch
   columns: Column<T>[];
   pageSizeOptions?: number[];
   isLoading?: boolean;
 };
 
 export default function DataTable<T extends Record<string, any>>({
-  data,
+  data = [], // ✅ default [] biar aman
   columns,
   pageSizeOptions = [5, 10, 20],
   isLoading = false,
@@ -91,7 +91,7 @@ export default function DataTable<T extends Record<string, any>>({
           </thead>
           <tbody className="text-gray-700">
             {isLoading ? (
-              // Skeleton
+              // Skeleton loader
               Array.from({ length: pageSize }).map((_, idx) => (
                 <tr key={idx} className="animate-pulse">
                   {columns.map((_, i) => (
@@ -108,10 +108,7 @@ export default function DataTable<T extends Record<string, any>>({
                   className="border-b last:border-0 hover:bg-gray-50 transition"
                 >
                   {columns.map((col, colIndex) => (
-                    <td
-                      key={colIndex}
-                      className="px-3 py-2 whitespace-nowrap"
-                    >
+                    <td key={colIndex} className="px-3 py-2 whitespace-nowrap">
                       {col.render
                         ? col.render(
                           row[col.accessor],

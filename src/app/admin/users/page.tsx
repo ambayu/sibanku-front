@@ -12,14 +12,14 @@ export default function UserManagement() {
   return (
     <div className="grid grid-cols-12 gap-4 md:gap-6">
       <div className="col-span-12">
-        <div className="bg-white dark:bg-gray-800 rounded-md shadow-md">
+        <div className="bg-white rounded-md shadow-md">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <div>
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+              <h2 className="text-xl font-semibold text-gray-800">
                 Manajemen User | Lihat User
               </h2>
-              <p className="text-gray-500 dark:text-gray-400 text-sm">
+              <p className="text-gray-500 text-sm">
                 Lihat dan kelola data User di sistem
               </p>
             </div>

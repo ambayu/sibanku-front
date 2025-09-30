@@ -17,15 +17,11 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 body {
@@ -34,32 +30,14 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* 🔹 Override tombol PrimeReact */
+/* 🔹 PrimeReact override */
 .p-button {
   background: var(--primary-color) !important;
   border: 1px solid var(--primary-color) !important;
   color: var(--primary-color-text) !important;
 }
+
 .p-button:hover {
   background: var(--primary-color-hover) !important;
   border-color: var(--primary-color-hover) !important;
-}
-
-/* 🔹 Focus ring (misalnya input/datepicker) */
-.p-focus {
-  border-color: var(--primary-color) !important;
-  box-shadow: 0 0 0 1px var(--primary-color) !important;
-}
-
-/* 🔹 Calendar icon & FileUpload button ikut warna */
-.p-calendar .p-inputtext:enabled:focus,
-.p-fileupload-choose {
-  border-color: var(--primary-color) !important;
-}
-.p-fileupload-choose {
-  background: var(--primary-color) !important;
-  color: var(--primary-color-text) !important;
-}
-.p-fileupload-choose:hover {
-  background: var(--primary-color-hover) !important;
 }

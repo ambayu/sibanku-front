@@ -1,0 +1,270 @@
+"use client";
+
+import { useState } from "react";
+import { InputText } from "primereact/inputtext";
+import { InputTextarea } from "primereact/inputtextarea";
+import { Calendar } from "primereact/calendar";
+import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
+import { Button } from "primereact/button";
+import { Card } from "primereact/card";
+import { create } from "./api";
+import { useAlert } from "@/context/AlertContext";
+import { Dropdown } from 'primereact/dropdown';
+export default function PerkaraForm() {
+    const { showAlert } = useAlert();
+
+    // gabungkan semua field ke satu object state
+    const [form, setForm] = useState({
+        surat_permohonan: null as File | null,
+        hari: "",
+        tanggal: null as Date | null,
+        ruang_sidang: "",
+        agenda: "",
+        penggugat: "",
+        tergugat: "",
+        nomor_perkara: "",
+        tanggal_perkara: null as Date | null,
+        gugatan: "",
+        panitra_pengganti: "",
+        pihak: "",
+        penanggung_jawab: "",
+    });
+
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleFileSelect = (e: FileUploadSelectEvent) => {
+        if (e.files && e.files.length > 0) {
+            setForm({ ...form, surat_permohonan: e.files[0] });
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        try {
+            const formData = new FormData();
+            Object.entries(form).forEach(([key, value]) => {
+                if (value) {
+                    if (value instanceof Date) {
+                        formData.append(key, value.toISOString());
+                    } else {
+                        formData.append(key, value as any);
+                    }
+                }
+            });
+
+            await create(formData);
+            showAlert("success", "Perkara berhasil ditambahkan");
+
+            // reset semua field sekali jalan
+            setForm({
+                surat_permohonan: null,
+                hari: "",
+                tanggal: null,
+                ruang_sidang: "",
+                agenda: "",
+                penggugat: "",
+                tergugat: "",
+                nomor_perkara: "",
+                tanggal_perkara: null,
+                gugatan: "",
+                panitra_pengganti: "",
+                pihak: "",
+                penanggung_jawab: "",
+            });
+        } catch (err: any) {
+            showAlert("error", err.message || "Gagal menambahkan perkara");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="flex justify-center">
+            <Card className="w-full">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                    {/* Upload Surat */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">
+                            Upload Surat Permohonan
+                        </label>
+                        <FileUpload
+                            mode="basic"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            chooseLabel="Pilih File"
+                            className="w-full"
+                            customUpload
+                            auto={false}
+                            onSelect={handleFileSelect}
+                        />
+                    </div>
+
+                    {/* Hari */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Hari</label>
+                        <InputText
+                            value={form.hari}
+                            onChange={(e) => setForm({ ...form, hari: e.target.value })}
+                            placeholder="Contoh: Senin"
+                            className="w-full"
+                        />
+                    </div>
+
+                    {/* Tanggal */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Tanggal</label>
+                        <Calendar
+                            value={form.tanggal}
+                            onChange={(e) =>
+                                setForm({ ...form, tanggal: e.value as Date | null })
+                            }
+                            className="w-full"
+                            dateFormat="dd-mm-yy"
+                            showIcon
+                        />
+                    </div>
+
+                    {/* Ruang Sidang */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Ruang Sidang</label>
+                        <InputText
+                            value={form.ruang_sidang}
+                            onChange={(e) =>
+                                setForm({ ...form, ruang_sidang: e.target.value })
+                            }
+                            placeholder="Ruang 1 / Ruang Cakra"
+                            className="w-full"
+                        />
+                    </div>
+
+                    {/* Agenda */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Agenda</label>
+                        <InputText
+                            value={form.agenda}
+                            onChange={(e) => setForm({ ...form, agenda: e.target.value })}
+                            placeholder="Agenda Sidang"
+                            className="w-full"
+                        />
+                    </div>
+
+                    {/* Penggugat */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Penggugat</label>
+                        <InputText
+                            value={form.penggugat}
+                            onChange={(e) => setForm({ ...form, penggugat: e.target.value })}
+                            placeholder="Nama Penggugat"
+                            className="w-full"
+                        />
+                    </div>
+
+                    {/* Tergugat */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Tergugat</label>
+                        <InputText
+                            value={form.tergugat}
+                            onChange={(e) => setForm({ ...form, tergugat: e.target.value })}
+                            placeholder="Nama Tergugat"
+                            className="w-full"
+                        />
+                    </div>
+
+                    {/* Nomor Perdata */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Nomor Perkara</label>
+                        <InputText
+                            value={form.nomor_perkara}
+                            onChange={(e) =>
+                                setForm({ ...form, nomor_perkara: e.target.value })
+                            }
+                            placeholder="123/Pdt.G/2025/PN.Mdn"
+                            className="w-full"
+                        />
+                    </div>
+
+                    {/* Tanggal Perkara */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">
+                            Tanggal Perkara
+                        </label>
+                        <Calendar
+                            value={form.tanggal_perkara}
+                            onChange={(e) =>
+                                setForm({ ...form, tanggal_perkara: e.value as Date | null })
+                            }
+                            className="w-full"
+                            dateFormat="dd-mm-yy"
+                            showIcon
+                        />
+                    </div>
+
+                    {/* Gugatan */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Gugatan</label>
+                        <Dropdown
+                            value={form.gugatan}
+                            options={
+                                [
+                                    { label: "Gugatan PMH", value: "Gugatan PMH" },
+                                    { label: "Gugatan Wanprestasi", value: "Gugatan Wanprestasi" },
+                                ]
+                            }
+
+
+                            onChange={(e) => setForm({ ...form, gugatan: e.value })}
+                            placeholder="Pilih Gugatan"
+                            className="w-full"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Pihak</label>
+                        <InputTextarea
+                            value={form.pihak}
+                            onChange={(e) => setForm({ ...form, pihak: e.target.value })}
+                            rows={4}
+                            placeholder="Isi pihak..."
+                            className="w-full"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Panitra Pengganti</label>
+                        <InputTextarea
+                            value={form.panitra_pengganti}
+                            onChange={(e) => setForm({ ...form, panitra_pengganti: e.target.value })}
+                            rows={4}
+                            placeholder="Isi panitra pengganti..."
+                            className="w-full"
+                        />
+                    </div>
+
+
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Penanggung Jawab</label>
+                        <InputTextarea
+                            value={form.penanggung_jawab}
+                            onChange={(e) => setForm({ ...form, penanggung_jawab: e.target.value })}
+                            rows={4}
+                            placeholder="Isi penanggung jawab..."
+                            className="w-full"
+                        />
+                    </div>
+
+                    {/* Tombol Submit */}
+                    <div className="flex justify-end">
+                        <Button
+                            type="submit"
+                            label={isLoading ? "Mengirim..." : "Kirim Perkara"}
+                            icon={isLoading ? "pi pi-spin pi-spinner" : "pi pi-send"}
+                            disabled={isLoading}
+                            className="p-button-success"
+                        />
+                    </div>
+                </form>
+            </Card>
+        </div>
+    );
+}
