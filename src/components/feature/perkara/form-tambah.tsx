@@ -27,7 +27,7 @@ export default function PerkaraForm() {
         gugatan: "",
         panitra_pengganti: "",
         pihak: "",
-        penanggung_jawab: "",
+        penanggung_jawab: [] as string[], // ⬅️ array
     });
 
     const [isLoading, setIsLoading] = useState(false);
@@ -46,13 +46,16 @@ export default function PerkaraForm() {
             const formData = new FormData();
             Object.entries(form).forEach(([key, value]) => {
                 if (value) {
-                    if (value instanceof Date) {
+                    if (Array.isArray(value)) {
+                        value.forEach((v) => formData.append(`${key}[]`, v));
+                    } else if (value instanceof Date) {
                         formData.append(key, value.toISOString());
                     } else {
                         formData.append(key, value as any);
                     }
                 }
             });
+
 
             await create(formData);
             showAlert("success", "Perkara berhasil ditambahkan");
@@ -71,7 +74,7 @@ export default function PerkaraForm() {
                 gugatan: "",
                 panitra_pengganti: "",
                 pihak: "",
-                penanggung_jawab: "",
+                penanggung_jawab: [],
             });
         } catch (err: any) {
             showAlert("error", err.message || "Gagal menambahkan perkara");
@@ -94,8 +97,7 @@ export default function PerkaraForm() {
                             accept=".pdf,.jpg,.jpeg,.png"
                             chooseLabel="Pilih File"
                             className="w-full"
-                            customUpload
-                            auto={false}
+                         
                             onSelect={handleFileSelect}
                         />
                     </div>
@@ -244,14 +246,42 @@ export default function PerkaraForm() {
 
                     <div>
                         <label className="block text-sm font-medium mb-2">Penanggung Jawab</label>
-                        <InputTextarea
-                            value={form.penanggung_jawab}
-                            onChange={(e) => setForm({ ...form, penanggung_jawab: e.target.value })}
-                            rows={4}
-                            placeholder="Isi penanggung jawab..."
-                            className="w-full"
+
+                        {form.penanggung_jawab.map((pj, index) => (
+                            <div key={index} className="flex gap-2 mb-2">
+                                <InputText
+                                    value={pj}
+                                    onChange={(e) => {
+                                        const newPj = [...form.penanggung_jawab];
+                                        newPj[index] = e.target.value;
+                                        setForm({ ...form, penanggung_jawab: newPj });
+                                    }}
+                                    placeholder={`Penanggung Jawab ${index + 1}`}
+                                    className="w-full"
+                                />
+                                <Button
+                                    icon="pi pi-trash"
+                                    type="button"
+                                    className="p-button-danger p-button-text"
+                                    onClick={() => {
+                                        const newPj = form.penanggung_jawab.filter((_, i) => i !== index);
+                                        setForm({ ...form, penanggung_jawab: newPj });
+                                    }}
+                                />
+                            </div>
+                        ))}
+
+                        <Button
+                            label="Tambah Penanggung Jawab"
+                            type="button"
+                            icon="pi pi-plus"
+                            className="p-button-sm p-button-outlined"
+                            onClick={() =>
+                                setForm({ ...form, penanggung_jawab: [...form.penanggung_jawab, ""] })
+                            }
                         />
                     </div>
+
 
                     {/* Tombol Submit */}
                     <div className="flex justify-end">

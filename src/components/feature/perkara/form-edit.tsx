@@ -35,12 +35,13 @@ export default function PerkaraFormEdit() {
         gugatan: "",
         panitra_pengganti: "",
         pihak: "",
-        penanggung_jawab: "",
+        penanggung_jawab: [] as string[], // ⬅️ array
+
     });
 
     // fetch data lama
     const { data, isLoading: isLoadingData } = findOne(Number(param.id));
-
+    console.log(data, "data");
     useEffect(() => {
         if (!data) return;
         const perkara = data;
@@ -59,15 +60,15 @@ export default function PerkaraFormEdit() {
             gugatan: perkara.gugatan ?? "",
             panitra_pengganti: perkara.panitra_pengganti ?? "",
             pihak: perkara.pihak ?? "",
-            penanggung_jawab: perkara.penanggung_jawab ?? "",
+            penanggung_jawab: perkara.penanggung_jawabs.map((pj: any) => pj.nama),
 
         });
     }, [data]);
-
+    console.log(form, "form");
     // url file lama dari server
     const existingFileUrl = useMemo(() => {
         if (typeof form.surat_permohonan === "string" && form.surat_permohonan) {
-            return `${API_BASE}/uploads/${form.surat_permohonan}`;
+            return `${NEXT_PUBLIC_API_URL}/uploads/${form.surat_permohonan}`;
         }
         return null;
     }, [form.surat_permohonan]);
@@ -92,17 +93,25 @@ export default function PerkaraFormEdit() {
 
         try {
             const formData = new FormData();
+
             Object.entries(form).forEach(([key, value]) => {
-                if (!value) return;
+                if (value === null || value === undefined) return;
 
                 if (value instanceof Date) {
                     formData.append(key, value.toISOString());
-                } else if (key === "surat_permohonan") {
+                }
+                else if (key === "surat_permohonan") {
                     if (value instanceof File) {
                         formData.append("surat_permohonan", value);
                     }
-                } else {
-                    formData.append(key, value as string);
+                }
+                else if (Array.isArray(value)) {
+                    value.forEach((v) => {
+                        formData.append(`${key}[]`, v); // kirim sebagai array
+                    });
+                }
+                else {
+                    formData.append(key, value as any);
                 }
             });
 
@@ -116,6 +125,7 @@ export default function PerkaraFormEdit() {
             if (newFilePreviewUrl) URL.revokeObjectURL(newFilePreviewUrl);
         }
     };
+
 
     return (
         <div className="flex justify-center">
@@ -354,22 +364,44 @@ export default function PerkaraFormEdit() {
 
                     />
 
-                    <InputWrapper
-                        label="Penanggung Jawab"
-                        loading={isLoadingData}
-                        children={
-                            <InputTextarea
-                                value={form.penanggung_jawab}
-                                onChange={(e) =>
-                                    setForm({ ...form, penanggung_jawab: e.target.value })
-                                }
-                                rows={4}
-                                placeholder="Isi panitra pengganti..."
-                                className="w-full"
-                            />
-                        }
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Penanggung Jawab</label>
 
-                    />
+                        {form.penanggung_jawab.map((pj, index) => (
+                            <div key={index} className="flex gap-2 mb-2">
+                                <InputText
+                                    value={pj}
+                                    onChange={(e) => {
+                                        const newPj = [...form.penanggung_jawab];
+                                        newPj[index] = e.target.value;
+                                        setForm({ ...form, penanggung_jawab: newPj });
+                                    }}
+                                    placeholder={`Penanggung Jawab ${index + 1}`}
+                                    className="w-full"
+                                />
+                                <Button
+                                    icon="pi pi-trash"
+                                    type="button"
+                                    className="p-button-danger p-button-text"
+                                    onClick={() => {
+                                        const newPj = form.penanggung_jawab.filter((_, i) => i !== index);
+                                        setForm({ ...form, penanggung_jawab: newPj });
+                                    }}
+                                />
+                            </div>
+                        ))}
+
+                        <Button
+                            label="Tambah Penanggung Jawab"
+                            type="button"
+                            icon="pi pi-plus"
+                            className="p-button-sm p-button-outlined"
+                            onClick={() =>
+                                setForm({ ...form, penanggung_jawab: [...form.penanggung_jawab, ""] })
+                            }
+                        />
+                    </div>
+
 
 
                     {/* Submit */}

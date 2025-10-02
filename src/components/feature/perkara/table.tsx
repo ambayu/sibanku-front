@@ -7,6 +7,7 @@ import { RealfindAll, remove } from "./api";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { mutate } from "swr";
 import { useAlert } from "@/context/AlertContext";
+import { Tooltip } from "primereact/tooltip";
 
 
 
@@ -27,9 +28,14 @@ export default function PerkaraPage() {
           { header: "Nomor Perkara", accessor: "nomor_perkara" },
           { header: "Pihak", accessor: "pihak" },
           { header: "Panitra Pengganti", accessor: "panitra_pengganti" },
-          { header: "Penanggung Jawab", accessor: "penanggung_jawab" },
-          { header: "Gugatan", accessor: "gugatan" },
-          { header: "Dibuat Oleh", accessor: "created_by" },
+          {
+            header: "Penanggung Jawab", accessor: "penanggung_jawabs",
+
+           render: (value) => value.map((pj: any) => pj.nama).join(", ")
+
+
+          },
+          { header: "Dibuat Oleh", accessor: "CreatedByUser.name", render: (_: any, row: any) => row.CreatedByUser?.name || "-" },
           { header: "DiUbah Oleh", accessor: "UpdatedByUser.name", render: (_: any, row: any) => row.UpdatedByUser?.name || "-" },
 
           {
@@ -43,6 +49,10 @@ export default function PerkaraPage() {
                   text
                   size="small"
                   severity="info"
+                  tooltip="Edit Perkara"
+                  tooltipOptions={{
+                    position: "bottom",
+                  }}
 
                   onClick={() => {
                     route.push(`/admin/perkara/edit/${row.id}`);
@@ -52,6 +62,10 @@ export default function PerkaraPage() {
                   icon="pi pi-trash"
                   rounded
                   text
+                  tooltip="Hapus Perkara"
+                  tooltipOptions={{
+                    position: "bottom",
+                  }}
                   size="small"
                   severity="danger"
                   onClick={() => {
@@ -64,7 +78,7 @@ export default function PerkaraPage() {
                       accept: async () => {
                         try {
                           await remove(row.id);
-                          
+
                           showAlert("success", "Perkara berhasil dihapus ✅");
                         } catch (error: any) {
                           showAlert("error", error.message || "Gagal menghapus perkara");
@@ -73,7 +87,21 @@ export default function PerkaraPage() {
                     });
                   }}
                 />
+                <Button
+                  icon="pi pi-play"
+                  rounded
+                  text
+                  size="small"
+                  severity="info"
+                  tooltip="Lihat Perkara"
+                  tooltipOptions={{
+                    position: "bottom",
+                  }}
 
+                  onClick={() => {
+                    route.push(`/admin/perkara/view/${row.id}`);
+                  }}
+                />
 
               </div>
             ),

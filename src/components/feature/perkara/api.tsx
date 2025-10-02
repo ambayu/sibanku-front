@@ -67,8 +67,8 @@ export function RealfindAll(search?: string) {
         const queryParams = `?search=${search}`
     }
     const fullUrl = `${url}/all${queryParams}`;
-
     const { data, error, isLoading } = useSWR(fullUrl, fetcher);
+    console.log(data);
     return {
         data: data?.page_data,
         message: data?.message,
@@ -93,7 +93,7 @@ export function findOne(id: number) {
         isError: !!error,
         errorMessage: error?.message,
         statusCode: error?.statusCode,
-        refresh: () => mutate(fullUrl),
+        mutate: () => mutate(fullUrl),
     };
 }
 
@@ -122,6 +122,27 @@ export async function create(data: any) {
 export async function update(id: number, data: any) {
     const session = await getSession();
     const response = await fetch(`${url}/${id}`, {
+        method: "PATCH",
+        headers: {
+            Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: data,
+    });
+
+    const resData = await response.json();
+    if (!response.ok) {
+        throw Object.assign(
+            new Error(resData.message || "Gagal mengupdate data"),
+            { statusCode: response.status }
+        );
+    }
+    return resData;
+}
+
+
+export async function tahapPerkara(id: number, data: any) {
+    const session = await getSession();
+    const response = await fetch(`${url}/tahap-perkara/${id}`, {
         method: "PATCH",
         headers: {
             Authorization: `Bearer ${session?.accessToken}`,
