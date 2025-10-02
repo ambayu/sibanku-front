@@ -68,7 +68,7 @@ export default function PerkaraFormEdit() {
     // url file lama dari server
     const existingFileUrl = useMemo(() => {
         if (typeof form.surat_permohonan === "string" && form.surat_permohonan) {
-            return `${NEXT_PUBLIC_API_URL}/uploads/${form.surat_permohonan}`;
+            return `${API_BASE}/uploads/${form.surat_permohonan}`;
         }
         return null;
     }, [form.surat_permohonan]);
