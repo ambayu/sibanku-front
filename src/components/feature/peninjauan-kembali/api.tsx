@@ -1,7 +1,7 @@
 import useSWR, { mutate } from "swr";
 import { getSession } from "next-auth/react";
 
-const url = process.env.NEXT_PUBLIC_API_URL + "/banding";
+const url = process.env.NEXT_PUBLIC_API_URL + "/peninjauan-kembali";
 
 
 // Fetcher dengan Bearer Token
@@ -68,7 +68,7 @@ export function RealfindAll(search?: string) {
     }
     const fullUrl = `${url}/all${queryParams}`;
     const { data, error, isLoading } = useSWR(fullUrl, fetcher);
-    console.log(data);
+    console.log(data,"asd");
     return {
         data: data?.page_data,
         message: data?.message,
@@ -141,9 +141,9 @@ export async function update(id: number, data: any) {
     return resData;
 }
 
-export async function updateTahapBanding(id: number, data: any) {
+export async function updateTahapPK(id: number, data: any) {
     const session = await getSession();
-    const response = await fetch(`${url}/tahap-banding/${id}`, {
+    const response = await fetch(`${url}/tahap-peninjauan-kembali/${id}`, {
         method: "PATCH",
         headers: {
             Authorization: `Bearer ${session?.accessToken}`,

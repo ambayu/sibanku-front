@@ -10,38 +10,38 @@ import { create, findOne, update } from "./api";
 import { useParams } from "next/navigation";
 import { Skeleton } from "primereact/skeleton";
 
-export default function BandingFormEdit() {
+export default function PeninjauanKembaliFormEdit() {
     const { showAlert } = useAlert();
     const { data: dataPerkara, isLoading: isLoadingPerkara } = RealfindAll("");
     const param = useParams();
 
     const [isLoading, setIsLoading] = useState(false);
-    const [nomorBanding, setNomorBanding] = useState("");
+    const [nomorPeninjauanKembali, setNomorPeninjauanKembali] = useState("");
     const [selectedId, setSelectedId] = useState<number | null>(null);
 
-    const { data: dataBanding, isLoading: isLoadingBanding, mutate } = findOne(Number(param.id));
+    const { data: dataPeninjauanKembali, isLoading: isLoadingPeninjauanKembali, mutate } = findOne(Number(param.id));
 
-    console.log(dataBanding, "dataBanding");
+    console.log(dataPeninjauanKembali, "dataPeninjauanKembali");
     useEffect(() => {
-        if (dataBanding) {
-            setNomorBanding(dataBanding.nomor_banding);
-            setSelectedId(dataBanding.id_perkara);
+        if (dataPeninjauanKembali) {
+            setNomorPeninjauanKembali(dataPeninjauanKembali.nomor_pk);
+            setSelectedId(dataPeninjauanKembali.id_perkara);
         }
-    }, [dataBanding]);
+    }, [dataPeninjauanKembali]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         const payload = {
-            nomor_banding: nomorBanding,
+            nomor_pk: nomorPeninjauanKembali,
             id_perkara: selectedId
         }
 
         try {
             await update(Number(param.id),payload);
-            showAlert("success", `Nomor banding ${nomorBanding} berhasil disimpan`);
+            showAlert("success", `Nomor peninjauan kembali ${nomorPeninjauanKembali} berhasil disimpan`);
         } catch (error: any) {
-            showAlert("error", error.message || "Gagal menyimpan nomor banding");
+            showAlert("error", error.message || "Gagal menyimpan nomor peninjauan kembali");
         } finally {
             setIsLoading(false);
         }
@@ -54,15 +54,15 @@ export default function BandingFormEdit() {
 
     return (
         <div className="justify-center">
-            {/* Input Nomor Banding */}
+            {/* Input Nomor PeninjauanKembali */}
             <form onSubmit={handleSubmit}>
                 <div className="mb-4 col-span-2">
-                    <label className="block text-sm font-medium mb-2">Nomor Banding</label>
-                    {isLoadingBanding ? <Skeleton height="2.5rem" className="w-full" /> : <InputText
+                    <label className="block text-sm font-medium mb-2">Nomor PeninjauanKembali</label>
+                    {isLoadingPeninjauanKembali ? <Skeleton height="2.5rem" className="w-full" /> : <InputText
 
-                        value={nomorBanding}
-                        onChange={(e) => setNomorBanding(e.target.value)}
-                        placeholder="Isi nomor banding"
+                        value={nomorPeninjauanKembali}
+                        onChange={(e) => setNomorPeninjauanKembali(e.target.value)}
+                        placeholder="Isi nomor peninjauan kembali"
                         className="w-full"
                     />}
                 </div>

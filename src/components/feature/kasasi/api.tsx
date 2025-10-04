@@ -1,7 +1,7 @@
 import useSWR, { mutate } from "swr";
 import { getSession } from "next-auth/react";
 
-const url = process.env.NEXT_PUBLIC_API_URL + "/perkara";
+const url = process.env.NEXT_PUBLIC_API_URL + "/kasasi";
 
 
 // Fetcher dengan Bearer Token
@@ -68,7 +68,7 @@ export function RealfindAll(search?: string) {
     }
     const fullUrl = `${url}/all${queryParams}`;
     const { data, error, isLoading } = useSWR(fullUrl, fetcher);
-    console.log(data);
+    console.log(data,"asd");
     return {
         data: data?.page_data,
         message: data?.message,
@@ -104,8 +104,9 @@ export async function create(data: any) {
         method: "POST",
         headers: {
             Authorization: `Bearer ${session?.accessToken}`,
+            "Content-Type": "application/json",
         },
-        body: data,
+        body: JSON.stringify(data),
     });
 
     const resData = await response.json();
@@ -125,6 +126,28 @@ export async function update(id: number, data: any) {
         method: "PATCH",
         headers: {
             Authorization: `Bearer ${session?.accessToken}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    });
+
+    const resData = await response.json();
+    if (!response.ok) {
+        throw Object.assign(
+            new Error(resData.message || "Gagal mengupdate data"),
+            { statusCode: response.status }
+        );
+    }
+    return resData;
+}
+
+export async function updateTahapkasasi(id: number, data: any) {
+    const session = await getSession();
+    const response = await fetch(`${url}/tahap-kasasi/${id}`, {
+        method: "PATCH",
+        headers: {
+            Authorization: `Bearer ${session?.accessToken}`,
+
         },
         body: data,
     });

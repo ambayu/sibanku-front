@@ -1,7 +1,7 @@
 import useSWR, { mutate } from "swr";
 import { getSession } from "next-auth/react";
 
-const url = process.env.NEXT_PUBLIC_API_URL + "/user";
+const url = process.env.NEXT_PUBLIC_API_URL + "/biodata";
 console.log(url);
 
 // Fetcher dengan Bearer Token
@@ -84,10 +84,10 @@ export async function create(data: any) {
   const response = await fetch(url, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+
       Authorization: `Bearer ${session?.accessToken}`,
     },
-    body: JSON.stringify(data),
+    body: data,
   });
 
   const resData = await response.json();
@@ -106,10 +106,9 @@ export async function update(id: number, data: any) {
   const response = await fetch(`${url}/${id}`, {
     method: "PATCH",
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${session?.accessToken}`,
     },
-    body: JSON.stringify(data),
+    body: data,
   });
 
   const resData = await response.json();

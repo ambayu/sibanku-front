@@ -1,47 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import DataTable from "@/components/ui/DataTable";
 import { RealfindAll } from "../perkara/api";
 import { useAlert } from "@/context/AlertContext";
-import { create, findOne, update } from "./api";
-import { useParams } from "next/navigation";
-import { Skeleton } from "primereact/skeleton";
+import { create } from "./api";
 
-export default function BandingFormEdit() {
+export default function PeninjauanKembaliForm() {
     const { showAlert } = useAlert();
-    const { data: dataPerkara, isLoading: isLoadingPerkara } = RealfindAll("");
-    const param = useParams();
+    const { data: dataPeninjauanKembali, isLoading: isLoadingPeninjauanKembali } = RealfindAll("");
 
     const [isLoading, setIsLoading] = useState(false);
-    const [nomorBanding, setNomorBanding] = useState("");
+    const [nomorPeninjauanKembali, setNomorPeninjauanKembali] = useState("");
     const [selectedId, setSelectedId] = useState<number | null>(null);
-
-    const { data: dataBanding, isLoading: isLoadingBanding, mutate } = findOne(Number(param.id));
-
-    console.log(dataBanding, "dataBanding");
-    useEffect(() => {
-        if (dataBanding) {
-            setNomorBanding(dataBanding.nomor_banding);
-            setSelectedId(dataBanding.id_perkara);
-        }
-    }, [dataBanding]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         const payload = {
-            nomor_banding: nomorBanding,
+            nomor_pk: nomorPeninjauanKembali,
             id_perkara: selectedId
         }
 
         try {
-            await update(Number(param.id),payload);
-            showAlert("success", `Nomor banding ${nomorBanding} berhasil disimpan`);
+            await create(payload);
+            showAlert("success", `Nomor peninjauan kembali ${nomorPeninjauanKembali} berhasil disimpan`);
         } catch (error: any) {
-            showAlert("error", error.message || "Gagal menyimpan nomor banding");
+            showAlert("error", error.message || "Gagal menyimpan nomor peninjauan kembali");
         } finally {
             setIsLoading(false);
         }
@@ -54,17 +41,16 @@ export default function BandingFormEdit() {
 
     return (
         <div className="justify-center">
-            {/* Input Nomor Banding */}
+            {/* Input Nomor PeninjauanKembali */}
             <form onSubmit={handleSubmit}>
                 <div className="mb-4 col-span-2">
-                    <label className="block text-sm font-medium mb-2">Nomor Banding</label>
-                    {isLoadingBanding ? <Skeleton height="2.5rem" className="w-full" /> : <InputText
-
-                        value={nomorBanding}
-                        onChange={(e) => setNomorBanding(e.target.value)}
-                        placeholder="Isi nomor banding"
+                    <label className="block text-sm font-medium mb-2">Nomor PeninjauanKembali</label>
+                    <InputText
+                        value={nomorPeninjauanKembali}
+                        onChange={(e) => setNomorPeninjauanKembali(e.target.value)}
+                        placeholder="Isi nomor peninjauan kembali"
                         className="w-full"
-                    />}
+                    />
                 </div>
 
                 <Button
@@ -76,12 +62,12 @@ export default function BandingFormEdit() {
             </form>
 
             {/* Tabel Data */}
-            <h2 className="text-2xl font-semibold my-4 col-span-2">Daftar Perkara</h2>
+            <h2 className="text-2xl font-semibold text-black my-4 col-span-2">Daftar Perkara</h2>
 
             <div className="w-full">
                 <DataTable
-                    isLoading={isLoadingPerkara}
-                    data={dataPerkara}
+                    isLoading={isLoadingPeninjauanKembali}
+                    data={dataPeninjauanKembali}
                     columns={[
                         { header: "No", accessor: "no" },
                         { header: "Nomor Perkara", accessor: "nomor_perkara" },

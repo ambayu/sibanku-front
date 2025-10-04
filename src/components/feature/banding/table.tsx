@@ -16,7 +16,6 @@ export default function BandingPage() {
   const { showAlert } = useAlert();
 
   const { data: dataBanding, isLoading, mutate } = RealfindAll("");
-  console.log(dataBanding, "data banding");
   return (
     <div className="p-6">
       <ConfirmDialog />
@@ -101,7 +100,7 @@ export default function BandingPage() {
                   }}
 
                   onClick={() => {
-                    route.push(`/admin/banding/view/${row.id}`);
+                    route.push(`/admin/banding/view/${row.Banding[0].id}`);
                   }}
                 />
 

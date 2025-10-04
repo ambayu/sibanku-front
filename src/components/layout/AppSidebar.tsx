@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSidebar } from "@/context/SidebarContext";
-import { UserCircle, ChevronDown, ChevronRight } from "lucide-react";
+import { UserCircle, ChevronDown, ChevronRight, LogOut, User } from "lucide-react";
 import { useState } from "react";
+import { signOut } from "next-auth/react";
 
 type MenuItem = {
   name: string;
@@ -22,29 +23,10 @@ const menuGroups: MenuGroup[] = [
     label: "Menu Utama",
     items: [
       { name: "Dashboard", path: "/admin" },
-      {
-        name: "Perkara",
-        path: "/admin/perkara"
-
-      },
-
-      {
-        name: "Banding",
-        path: "/admin/banding"
-
-      },
-      {
-        name: "Kasasi", 
-        path: "/admin/kasasi"
-
-      },
-      {
-        name: "Peninjauan Kembali",
-        path: "/admin/peninjauan-kembali"
-
-
-      },
-
+      { name: "Perkara", path: "/admin/perkara" },
+      { name: "Banding", path: "/admin/banding" },
+      { name: "Kasasi", path: "/admin/kasasi" },
+      { name: "Peninjauan Kembali", path: "/admin/peninjauan-kembali" },
       { name: "Laporan", path: "/admin/laporan" },
     ],
   },
@@ -58,7 +40,7 @@ const menuGroups: MenuGroup[] = [
       {
         name: "Role and Permission",
         children: [
-          { name: "Permission", path: "/admin/permission" },
+          { name: "Permission", path: "/admin/permissions" },
           { name: "Role", path: "/admin/role" },
         ],
       },
@@ -69,6 +51,7 @@ const menuGroups: MenuGroup[] = [
 export default function AppSidebar() {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+  const router = useRouter();
 
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
@@ -87,6 +70,11 @@ export default function AppSidebar() {
 
   const toggleDropdown = (name: string) => {
     setOpenDropdown((prev) => (prev === name ? null : name));
+  };
+
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
+    router.push("/login");
   };
 
   return (
@@ -119,7 +107,10 @@ export default function AppSidebar() {
       </div>
 
       {/* Menu Navigasi */}
-      <nav className="flex-1 flex flex-col gap-3 pl-3 pr-0 py-3" aria-label="Menu utama">
+      <nav
+        className="flex-1 flex flex-col gap-3 pl-3 pr-0 py-3 overflow-y-auto"
+        aria-label="Menu utama"
+      >
         {menuGroups.map((group, i) => (
           <div key={i} className="flex flex-col gap-1">
             {shouldShowText && group.label && (
@@ -218,16 +209,26 @@ export default function AppSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="p-3 border-t border-white/10">
-        <div className="flex items-center gap-2.5">
-          <UserCircle className="h-7 w-7 text-white/80 flex-shrink-0" />
-          {shouldShowText && (
-            <div className="min-w-0 flex-1">
-              <p className="font-medium text-xs truncate">PEMERINTAH KOTA MEDAN</p>
-              <p className="text-[11px] text-white/70 truncate">(Pengguna Lainnya)</p>
-            </div>
-          )}
-        </div>
+      <div className="p-3 border-t border-white/10 flex flex-col gap-3">
+        {/* Tombol Profil */}
+        <Link
+          href="/admin/profile"
+          className="flex items-center gap-2.5 px-2 py-2 rounded-md text-sm text-white/90 hover:bg-white/10 transition"
+        >
+          <User className="h-5 w-5 flex-shrink-0" />
+          {shouldShowText && <span>Profil</span>}
+        </Link>
+
+        {/* Tombol Logout */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2.5 px-2 py-2 rounded-md text-sm text-red-300 hover:bg-white/10 transition"
+        >
+          <LogOut className="h-5 w-5 flex-shrink-0" />
+          {shouldShowText && <span>Logout</span>}
+        </button>
+
+    
       </div>
     </aside>
   );

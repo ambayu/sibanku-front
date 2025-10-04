@@ -5,11 +5,10 @@ import Stepper from "@/components/ui/Stepper";
 import { UploadCloud } from "lucide-react";
 import { useParams } from "next/navigation";
 import { Button } from "primereact/button";
-import { Skeleton } from "primereact/skeleton";
 import { Dialog } from "primereact/dialog";
 import { InputTextarea } from "primereact/inputtextarea";
 import { useAlert } from "@/context/AlertContext";
-import { findOne, update, updateTahapkasasi,  } from "./api";
+import { findOne, updateTahapPK } from "./api";
 
 type Step = {
     label: string;
@@ -22,32 +21,33 @@ type FileState = {
     existing?: string;
 } | null;
 
-export default function StepperKasasi() {
+export default function StepperPeninjauanKembali() {
     const { showAlert } = useAlert();
     const [currentStep, setCurrentStep] = useState(1);
     const params = useParams();
     const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/uploads";
 
-    // Modal Upload File
+    // Modal Upload
     const [showUploadModal, setShowUploadModal] = useState<
         null | "aktaFile" | "memoriFile" | "kontraFile" | "putusanFile"
     >(null);
-
     const [fileTemp, setFileTemp] = useState<File | null>(null);
     const [fileDesc, setFileDesc] = useState("");
 
+    // formData state
     const [formData, setFormData] = useState({
-        nomor_kasasi: "",
+        nomor_pk: "",
         aktaFile: null as FileState,
         memoriFile: null as FileState,
         kontraFile: null as FileState,
         putusanFile: null as FileState,
     });
 
-    // get data kasasi
-    const { data: dataKasasi, isLoading, mutate } = findOne(Number(params.id));
-    console.log(dataKasasi, "dataKasasi");
+    // get data PK
+    const { data: dataPK, isLoading } = findOne(Number(params.id));
+    console.log("📂 dataPK:", dataPK);
 
+    /** ─── Handle file selection ─── */
     const handleFileSelect = (
         e: any,
         field: "aktaFile" | "memoriFile" | "kontraFile" | "putusanFile"
@@ -62,9 +62,10 @@ export default function StepperKasasi() {
         }
     };
 
+    /** ─── Update ke backend ─── */
     const handleUpdate = async () => {
         const form = new FormData();
-        form.append("nomor_kasasi", formData.nomor_kasasi);
+        form.append("nomor_pk", formData.nomor_pk);
 
         const appendFile = (key: keyof typeof formData, field: string) => {
             const data = formData[key] as FileState;
@@ -72,20 +73,21 @@ export default function StepperKasasi() {
             if (data?.deskripsi) form.append(`${field}_desc`, data.deskripsi);
         };
 
-        appendFile("aktaFile", "akta_kasasi");
-        appendFile("memoriFile", "memori_kasasi");
+        appendFile("aktaFile", "akta_pk");
+        appendFile("memoriFile", "memori_pk");
         appendFile("kontraFile", "kontra_memori");
-        appendFile("putusanFile", "putusan_kasasi");
+        appendFile("putusanFile", "putusan_pk");
 
         try {
-            await updateTahapkasasi(Number(params.id), form);
-            showAlert("success", "Data kasasi berhasil diperbarui ✅");
+            await updateTahapPK(Number(params.id), form);
+            showAlert("success", "Data peninjauan kembali berhasil diperbarui ✅");
         } catch (err: any) {
-            showAlert("error", err.message || "Gagal memperbarui kasasi");
+            showAlert("error", err.message || "Gagal memperbarui data PK");
         }
     };
 
-    const renderFilePreview = (field: keyof typeof formData, label: string, fieldName: string) => {
+    /** ─── Preview file & deskripsi ─── */
+    const renderFilePreview = (field: keyof typeof formData, label: string) => {
         const data = formData[field] as FileState;
         if (!data) return null;
 
@@ -122,10 +124,10 @@ export default function StepperKasasi() {
         );
     };
 
-    // mapping API → state
+    /** ─── Mapping data API ke state ─── */
     useEffect(() => {
-        if (!dataKasasi) return;
-        const mapFile = (field: string, desc: string) =>
+        if (!dataPK) return;
+        const mapFile = (field?: string, desc?: string) =>
             field
                 ? {
                     file: null,
@@ -134,23 +136,23 @@ export default function StepperKasasi() {
                 }
                 : null;
 
-        setFormData((prev) => ({
-            ...prev,
-            nomor_kasasi: dataKasasi.nomor_kasasi || "",
-            aktaFile: mapFile(dataKasasi.akta_kasasi, dataKasasi.akta_kasasi_desc),
-            memoriFile: mapFile(dataKasasi.memori_kasasi, dataKasasi.memori_kasasi_desc),
-            kontraFile: mapFile(dataKasasi.kontra_memori, dataKasasi.kontra_memori_desc),
-            putusanFile: mapFile(dataKasasi.putusan_kasasi, dataKasasi.putusan_kasasi_desc),
-        }));
-    }, [dataKasasi]);
+        setFormData({
+            nomor_pk: dataPK.nomor_pk || "",
+            aktaFile: mapFile(dataPK.akta_pk, dataPK.akta_pk_desc),
+            memoriFile: mapFile(dataPK.memori_pk, dataPK.memori_pk_desc),
+            kontraFile: mapFile(dataPK.kontra_memori, dataPK.kontra_memori_desc),
+            putusanFile: mapFile(dataPK.putusan_pk, dataPK.putusan_pk_desc),
+        });
+    }, [dataPK]);
 
+    /** ─── Steps ─── */
     const steps: Step[] = [
         {
-            label: "Akta Kasasi",
+            label: "Akta PK",
             content: (
                 <div>
-                    <h2 className="text-lg font-bold mb-2">📑 Akta Kasasi</h2>
-                    <p className="text-gray-600 mb-6">Unggah dokumen akta kasasi di sini.</p>
+                    <h2 className="text-lg font-bold mb-2">📑 Akta Peninjauan Kembali</h2>
+                    <p className="text-gray-600 mb-6">Unggah dokumen akta PK di sini.</p>
 
                     <input type="file" id="aktaFile" className="hidden" onChange={(e) => handleFileSelect(e, "aktaFile")} />
                     <label
@@ -158,16 +160,16 @@ export default function StepperKasasi() {
                         className="cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center bg-white text-gray-500 hover:border-[#0B5C4D]"
                     >
                         <UploadCloud className="h-12 w-12 mb-2 text-gray-400" />
-                        <p className="font-medium">Upload Akta Kasasi</p>
+                        <p className="font-medium">Upload Akta PK</p>
                         <p className="text-sm">Klik atau drag & drop</p>
                     </label>
 
-                    {renderFilePreview("aktaFile", "Akta Kasasi", "akta_kasasi")}
+                    {renderFilePreview("aktaFile", "Akta PK")}
 
                     <div className="flex justify-between mt-10">
-                        <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(1)} />
-                        <div className="flex justify-end gap-4">
-                            <Button label="Simpan" className="p-button-success" onClick={() => handleUpdate()} />
+                        <Button label="Kembali" className="p-button-secondary" disabled />
+                        <div className="flex gap-4">
+                            <Button label="Simpan" className="p-button-success" onClick={handleUpdate} />
                             <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(2)} />
                         </div>
                     </div>
@@ -175,11 +177,11 @@ export default function StepperKasasi() {
             ),
         },
         {
-            label: "Memori Kasasi",
+            label: "Memori PK",
             content: (
                 <div>
-                    <h2 className="text-lg font-bold mb-2">📑 Memori Kasasi</h2>
-                    <p className="text-gray-600 mb-6">Unggah dokumen memori kasasi di sini.</p>
+                    <h2 className="text-lg font-bold mb-2">📑 Memori Peninjauan Kembali</h2>
+                    <p className="text-gray-600 mb-6">Unggah dokumen memori PK di sini.</p>
 
                     <input type="file" id="memoriFile" className="hidden" onChange={(e) => handleFileSelect(e, "memoriFile")} />
                     <label
@@ -187,16 +189,16 @@ export default function StepperKasasi() {
                         className="cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center bg-white text-gray-500 hover:border-[#0B5C4D]"
                     >
                         <UploadCloud className="h-12 w-12 mb-2 text-gray-400" />
-                        <p className="font-medium">Upload Memori Kasasi</p>
+                        <p className="font-medium">Upload Memori PK</p>
                         <p className="text-sm">Klik atau drag & drop</p>
                     </label>
 
-                    {renderFilePreview("memoriFile", "Memori Kasasi", "memori_kasasi")}
+                    {renderFilePreview("memoriFile", "Memori PK")}
 
                     <div className="flex justify-between mt-10">
                         <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(1)} />
-                        <div className="flex justify-end gap-4">
-                            <Button label="Simpan" className="p-button-success" onClick={() => handleUpdate()} />
+                        <div className="flex gap-4">
+                            <Button label="Simpan" className="p-button-success" onClick={handleUpdate} />
                             <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(3)} />
                         </div>
                     </div>
@@ -207,8 +209,8 @@ export default function StepperKasasi() {
             label: "Kontra Memori",
             content: (
                 <div>
-                    <h2 className="text-lg font-bold mb-2">📑 Kontra Memori Kasasi</h2>
-                    <p className="text-gray-600 mb-6">Unggah dokumen kontra memori di sini.</p>
+                    <h2 className="text-lg font-bold mb-2">📑 Kontra Memori PK</h2>
+                    <p className="text-gray-600 mb-6">Unggah dokumen kontra memori PK di sini.</p>
 
                     <input type="file" id="kontraFile" className="hidden" onChange={(e) => handleFileSelect(e, "kontraFile")} />
                     <label
@@ -216,16 +218,16 @@ export default function StepperKasasi() {
                         className="cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center bg-white text-gray-500 hover:border-[#0B5C4D]"
                     >
                         <UploadCloud className="h-12 w-12 mb-2 text-gray-400" />
-                        <p className="font-medium">Upload Kontra Memori</p>
+                        <p className="font-medium">Upload Kontra Memori PK</p>
                         <p className="text-sm">Klik atau drag & drop</p>
                     </label>
 
-                    {renderFilePreview("kontraFile", "Kontra Memori", "kontra_memori")}
+                    {renderFilePreview("kontraFile", "Kontra Memori PK")}
 
                     <div className="flex justify-between mt-10">
                         <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(2)} />
-                        <div className="flex justify-end gap-4">
-                            <Button label="Simpan" className="p-button-success" onClick={() => handleUpdate()} />
+                        <div className="flex gap-4">
+                            <Button label="Simpan" className="p-button-success" onClick={handleUpdate} />
                             <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(4)} />
                         </div>
                     </div>
@@ -233,11 +235,11 @@ export default function StepperKasasi() {
             ),
         },
         {
-            label: "Putusan Kasasi",
+            label: "Putusan PK",
             content: (
                 <div>
-                    <h2 className="text-lg font-bold mb-2">📑 Putusan Kasasi</h2>
-                    <p className="text-gray-600 mb-6">Unggah dokumen putusan kasasi di sini.</p>
+                    <h2 className="text-lg font-bold mb-2">📑 Putusan Peninjauan Kembali</h2>
+                    <p className="text-gray-600 mb-6">Unggah dokumen putusan PK di sini.</p>
 
                     <input type="file" id="putusanFile" className="hidden" onChange={(e) => handleFileSelect(e, "putusanFile")} />
                     <label
@@ -245,26 +247,25 @@ export default function StepperKasasi() {
                         className="cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center bg-white text-gray-500 hover:border-[#0B5C4D]"
                     >
                         <UploadCloud className="h-12 w-12 mb-2 text-gray-400" />
-                        <p className="font-medium">Upload Putusan Kasasi</p>
+                        <p className="font-medium">Upload Putusan PK</p>
                         <p className="text-sm">Klik atau drag & drop</p>
                     </label>
 
-                    {renderFilePreview("putusanFile", "Putusan Kasasi", "putusan_kasasi")}
+                    {renderFilePreview("putusanFile", "Putusan PK")}
 
                     <div className="flex justify-between mt-10">
                         <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(3)} />
-                        <div className="flex justify-end gap-4">
-                            <Button label="Simpan" className="p-button-success" onClick={() => handleUpdate()} />
-                        </div>
+                        <Button label="Simpan" className="p-button-success" onClick={handleUpdate} />
                     </div>
                 </div>
             ),
         },
     ];
 
+    /** ─── Render UI ─── */
     return (
         <div className="p-6 bg-[#FFFCF0] min-h-screen rounded-xl">
-            <h1 className="text-2xl font-bold mb-8 text-center">Tahapan Kasasi</h1>
+            <h1 className="text-2xl font-bold mb-8 text-center">Tahapan Peninjauan Kembali</h1>
 
             <Stepper steps={steps} currentStep={currentStep} onStepChange={setCurrentStep} />
 
@@ -277,7 +278,7 @@ export default function StepperKasasi() {
 
             <div>{steps[currentStep - 1].content}</div>
 
-            {/* Modal Upload Deskripsi */}
+            {/* Modal Deskripsi */}
             <Dialog
                 header="Tambah Deskripsi File"
                 visible={showUploadModal !== null}

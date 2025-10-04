@@ -6,21 +6,20 @@ import { Button } from "primereact/button";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { useState } from "react";
 import { useAlert } from "@/context/AlertContext"; // ⬅️ hook dari context alert-mu
-import { mutate } from "swr";
-import { Link } from "lucide-react";
 import { useRouter } from "next/navigation";
-export default function UserTable() {
-  const { data: dataUsers, isLoading, mutate } = findAll(1, 100000000000);
+
+export default function PermissionsTable() {
+  const { data: dataPermissionss, isLoading,mutate } = findAll(1, 1000000000000);
   const [loadingId, setLoadingId] = useState<number | null>(null);
   const { showAlert } = useAlert(); // ✅ ambil fungsi showAlert
-  const router = useRouter();
+  const router = useRouter(); 
   // Handler hapus user
   const handleDelete = async (id: number) => {
     try {
       setLoadingId(id);
       await remove(id);
       mutate();
-      showAlert("success", "User berhasil dihapus ✅"); // ✅ pakai showAlert
+      showAlert("success", "Permissions berhasil dihapus ✅"); // ✅ pakai showAlert
     } catch (err: any) {
       showAlert("error", err.message || "Gagal menghapus user ❌"); // ✅ pakai showAlert
     } finally {
@@ -28,7 +27,7 @@ export default function UserTable() {
     }
   };
 
-  // Handler edit (sementara pakai alert dulu)
+
 
   // Tampilkan dialog konfirmasi sebelum delete
   const confirmDelete = (id: number) => {
@@ -43,26 +42,18 @@ export default function UserTable() {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-6">
       {/* Dialog konfirmasi */}
       <ConfirmDialog />
 
       <DataTable
-        data={dataUsers?.data || []}
+        data={dataPermissionss?.data || []}
         isLoading={isLoading}
         columns={[
           { header: "No", accessor: "no" },
           { header: "Nama", accessor: "name" },
-          { header: "Email", accessor: "email" },
-          { header: "Username", accessor: "username" },
-          {
-            header: "Role",
-            accessor: "roles",
-            render: (roles: any[]) =>
-              Array.isArray(roles)
-                ? roles.map((r) => (r.name ? r.name : r)).join(", ")
-                : "-",
-          },
+
+
           {
             header: "Actions",
             accessor: "id",
@@ -74,12 +65,10 @@ export default function UserTable() {
                   text
                   size="small"
                   severity="info"
-                  onClick={
-                    () => {
-                      router.push(`/admin/users/edit/${row.id}`);
-                    }
-                  }
 
+                  onClick={() => {
+                    router.push(`/admin/permissions/edit/${row.id}`);
+                  }}
                 />
                 <Button
                   icon="pi pi-trash"
