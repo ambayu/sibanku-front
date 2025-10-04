@@ -15,7 +15,7 @@ type StepperProps = {
 export default function Stepper({ steps, currentStep, onStepChange }: StepperProps) {
   return (
     <div className="w-full overflow-x-auto">
-      <div className="flex items-center gap-8 min-w-max px-2 mb-5">
+      <div className="flex justify-between  items-center gap-8 min-w-max px-2 mb-5">
         {steps.map((step, index) => {
           const stepNumber = index + 1;
           const isActive = stepNumber === currentStep;

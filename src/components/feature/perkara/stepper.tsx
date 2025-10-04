@@ -20,12 +20,17 @@ type Step = {
     label: string;
     content: React.ReactNode;
 };
+type FileState = {
+    file: File | null;
+    deskripsi: string;
+    existing?: string; // dari API
+} | null;
 
 export default function StepperPerkara() {
     const { showAlert } = useAlert();
     const [currentStep, setCurrentStep] = useState(1);
     const params = useParams();
-    const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+    const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/uploads";
 
     // Modal Catatan Sidang
     const [showModal, setShowModal] = useState<"pihak" | "mediasi" | null>(null);
@@ -34,17 +39,16 @@ export default function StepperPerkara() {
     const [showUploadModal, setShowUploadModal] = useState<
         null | "resumeFile" | "skkFile" | "sptFile" | "jawabanFile" | "replikFile" | "duplikFile" | "putusan_selaFile" | "putusan_majelisFile" | "kesimpulanFile"
     >(null);
-
     const [formData, setFormData] = useState({
-        resumeFile: null as { file: File; deskripsi: string } | null,
-        skkFile: null as { file: File; deskripsi: string } | null,
-        sptFile: null as { file: File; deskripsi: string } | null,
-        jawabanFile: null as { file: File; deskripsi: string } | null,
-        replikFile: null as { file: File; deskripsi: string } | null,
-        duplikFile: null as { file: File; deskripsi: string } | null,
-        putusan_selaFile: null as { file: File; deskripsi: string } | null,
-        putusan_majelisFile: null as { file: File; deskripsi: string } | null,
-        kesimpulanFile: null as { file: File; deskripsi: string } | null,
+        resumeFile: null as FileState,
+        skkFile: null as FileState,
+        sptFile: null as FileState,
+        jawabanFile: null as FileState,
+        replikFile: null as FileState,
+        duplikFile: null as FileState,
+        putusan_selaFile: null as FileState,
+        putusan_majelisFile: null as FileState,
+        kesimpulanFile: null as FileState,
         keputusan: "",
         menghadirkan_pihak: [] as {
             tanggal: Date | null;
@@ -101,106 +105,58 @@ export default function StepperPerkara() {
     };
 
     // Upload File → Simpan ke state sementara + buka modal
-    const handleFileSelect = (e: any, field: "resumeFile" | "skkFile" | "sptFile" | "jawabanFile" | "replikFile" | "duplikFile" | "putusan_selaFile" | "putusan_majelisFile" | "kesimpulanFile") => {
+    const handleFileSelect = (
+        e: any,
+        field:
+            | "resumeFile"
+            | "skkFile"
+            | "sptFile"
+            | "jawabanFile"
+            | "replikFile"
+            | "duplikFile"
+            | "putusan_selaFile"
+            | "putusan_majelisFile"
+            | "kesimpulanFile"
+    ) => {
         let file: File | null = null;
-        if (e.target?.files) file = e.target.files[0]; // input biasa
-        if (e.files) file = e.files[0]; // primereact
+        if (e.target?.files) file = e.target.files[0];
+        if (e.files) file = e.files[0];
         if (file) {
             setFileTemp(file);
             setFileDesc("");
             setShowUploadModal(field);
         }
     };
-
     const { data: dataPerkara, isLoading } = findOne(Number(params.id));
 
     const handleUpdate = async () => {
         const form = new FormData();
 
-        // 📄 Dokumen sidang
-        if (formData.resumeFile?.file) {
-            form.append("resume", formData.resumeFile.file);
-        }
-        if (formData.resumeFile?.deskripsi) {
-            form.append("resume_desc", formData.resumeFile.deskripsi);
-        }
+        // iterate dokumen
+        const appendFile = (key: keyof typeof formData, fieldName: string) => {
+            const data = formData[key] as FileState;
+            if (data?.file) form.append(fieldName, data.file);
+            if (data?.deskripsi) form.append(`${fieldName}_desc`, data.deskripsi);
+        };
 
-        if (formData.skkFile?.file) {
-            form.append("skk", formData.skkFile.file);
-        }
-        if (formData.skkFile?.deskripsi) {
-            form.append("skk_desc", formData.skkFile.deskripsi);
-        }
+        appendFile("resumeFile", "resume");
+        appendFile("skkFile", "skk");
+        appendFile("sptFile", "spt");
+        appendFile("jawabanFile", "jawaban");
+        appendFile("replikFile", "replik");
+        appendFile("duplikFile", "duplik");
+        appendFile("putusan_selaFile", "putusan_sela");
+        appendFile("putusan_majelisFile", "putusan_majelis");
+        appendFile("kesimpulanFile", "kesimpulan");
+        if (formData.keputusan) form.append("keputusan", formData.keputusan);
 
-        if (formData.sptFile?.file) {
-            form.append("spt", formData.sptFile.file);
+        // 🔹 serialize catatan
+        if (formData.menghadirkan_pihak.length > 0) {
+            form.append("catatan_pihak", JSON.stringify(formData.menghadirkan_pihak));
         }
-        if (formData.sptFile?.deskripsi) {
-            form.append("spt_desc", formData.sptFile.deskripsi);
+        if (formData.mediasi.length > 0) {
+            form.append("catatan_mediasi", JSON.stringify(formData.mediasi));
         }
-
-        if (formData.jawabanFile?.file) {
-            form.append("jawaban", formData.jawabanFile.file);
-        }
-        if (formData.jawabanFile?.deskripsi) {
-            form.append("jawaban_desc", formData.jawabanFile.deskripsi);
-        }
-
-        if (formData.replikFile?.file) {
-            form.append("replik", formData.replikFile.file);
-        }
-        if (formData.replikFile?.deskripsi) {
-            form.append("replik_desc", formData.replikFile.deskripsi);
-        }
-
-        if (formData.duplikFile?.file) {
-            form.append("duplik", formData.duplikFile.file);
-        }
-        if (formData.duplikFile?.deskripsi) {
-            form.append("duplik_desc", formData.duplikFile.deskripsi);
-        }
-
-        if (formData.putusan_selaFile?.file) {
-            form.append("putusan_sela", formData.putusan_selaFile.file);
-        }
-        if (formData.putusan_selaFile?.deskripsi) {
-            form.append("putusan_sela_desc", formData.putusan_selaFile.deskripsi);
-        }
-
-        if (formData.putusan_majelisFile?.file) {
-            form.append("putusan_majelis", formData.putusan_majelisFile.file);
-        }
-        if (formData.putusan_majelisFile?.deskripsi) {
-            form.append("putusan_majelis_desc", formData.putusan_majelisFile.deskripsi);
-        }
-
-        if (formData.kesimpulanFile?.file) {
-            form.append("kesimpulan", formData.kesimpulanFile.file);
-        }
-        if (formData.kesimpulanFile?.deskripsi) {
-            form.append("kesimpulan_desc", formData.kesimpulanFile.deskripsi);
-        }
-
-        // 🏆 keputusan (menang/kalah)
-        if (formData.keputusan) {
-            form.append("keputusan", formData.keputusan);
-        }
-
-        // 📝 Catatan Pihak
-        formData.menghadirkan_pihak.forEach((catatan, i) => {
-            form.append(`catatan_pihak[${i}][tanggal]`, catatan.tanggal?.toISOString() || "");
-            form.append(`catatan_pihak[${i}][para_pihak]`, catatan.para_pihak);
-            form.append(`catatan_pihak[${i}][kedudukan]`, catatan.kedudukan);
-            form.append(`catatan_pihak[${i}][keterangan]`, catatan.keterangan);
-        });
-
-        // 📝 Catatan Mediasi
-        formData.mediasi.forEach((catatan, i) => {
-            form.append(`catatan_mediasi[${i}][tanggal]`, catatan.tanggal?.toISOString() || "");
-            form.append(`catatan_mediasi[${i}][para_pihak]`, catatan.para_pihak);
-            form.append(`catatan_mediasi[${i}][kedudukan]`, catatan.kedudukan);
-            form.append(`catatan_mediasi[${i}][keterangan]`, catatan.keterangan);
-        });
 
         try {
             await tahapPerkara(Number(params.id), form);
@@ -210,38 +166,103 @@ export default function StepperPerkara() {
         }
     };
 
+    const renderFilePreview = (
+        field: keyof typeof formData,
+        label: string,
+        fieldName: string
+    ) => {
+        const data = formData[field] as FileState;
+        if (!data) return null;
 
+        return (
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
+                {data.file ? (
+                    <div className="flex items-center space-x-2 mb-2 p-2 bg-white rounded">
+                        <i className="pi pi-cloud-upload text-green-500"></i>
+                        <div>
+                            <p className="text-xs text-gray-500">File Baru</p>
+                            <p className="text-sm font-semibold">{data.file.name}</p>
+                        </div>
+                    </div>
+                ) : data.existing ? (
+                    <div className="flex items-center justify-between mb-2 p-2 bg-white rounded">
+                        <div className="flex items-center space-x-2">
+                            <i className="pi pi-file text-blue-500"></i>
+                            <span className="text-sm">{label} tersedia</span>
+                        </div>
+                        <Button
+                            type="button"
+                            label="Lihat"
+                            icon="pi pi-external-link"
+                            onClick={() =>
+                                window.open(
+                                    `${API_BASE}/${data.existing}`,
+                                    "_blank"
+                                )
+                            }
+                            className="p-button-outlined p-button-sm"
+                        />
+                    </div>
+                ) : null}
 
+                <div className="text-lg text-gray-600 p-2 bg-white rounded">
+                    <span className="font-medium">Deskripsi:</span> {data.deskripsi || "-"}
+                </div>
+            </div>
+        );
+    };
+
+    // mapping API → state
     useEffect(() => {
         if (!dataPerkara) return;
 
+        const mapFile = (field: string, desc: string) =>
+            field
+                ? {
+                    file: null,
+                    deskripsi: desc || "",
+                    existing: field,
+                }
+                : null;
+
         setFormData((prev) => ({
             ...prev,
-            // isi dokumen yang sudah ada
-            resumeFile: dataPerkara.resume ? { file: null as any, deskripsi: dataPerkara.resume_desc || "" } : null,
-            skkFile: dataPerkara.skk ? { file: null as any, deskripsi: dataPerkara.skk_desc || "" } : null,
-            sptFile: dataPerkara.spt ? { file: null as any, deskripsi: dataPerkara.spt_desc || "" } : null,
-            jawabanFile: dataPerkara.jawaban ? { file: null as any, deskripsi: dataPerkara.jawaban_desc || "" } : null,
-            replikFile: dataPerkara.replik ? { file: null as any, deskripsi: dataPerkara.replik_desc || "" } : null,
-            duplikFile: dataPerkara.duplik ? { file: null as any, deskripsi: dataPerkara.duplik_desc || "" } : null,
-            putusan_selaFile: dataPerkara.putusan_sela ? { file: null as any, deskripsi: dataPerkara.putusan_sela_desc || "" } : null,
-            putusan_majelisFile: dataPerkara.putusan_majelis ? { file: null as any, deskripsi: dataPerkara.putusan_majelis_desc || "" } : null,
-            kesimpulanFile: dataPerkara.kesimpulan ? { file: null as any, deskripsi: dataPerkara.kesimpulan_desc || "" } : null,
+            resumeFile: mapFile(dataPerkara.resume, dataPerkara.resume_desc),
+            skkFile: mapFile(dataPerkara.skk, dataPerkara.skk_desc),
+            sptFile: mapFile(dataPerkara.spt, dataPerkara.spt_desc),
+            jawabanFile: mapFile(dataPerkara.jawaban, dataPerkara.jawaban_desc),
+            replikFile: mapFile(dataPerkara.replik, dataPerkara.replik_desc),
+            duplikFile: mapFile(dataPerkara.duplik, dataPerkara.duplik_desc),
+            putusan_selaFile: mapFile(
+                dataPerkara.putusan_sela,
+                dataPerkara.putusan_sela_desc
+            ),
+            putusan_majelisFile: mapFile(
+                dataPerkara.putusan_majelis,
+                dataPerkara.putusan_majelis_desc
+            ),
+            kesimpulanFile: mapFile(
+                dataPerkara.kesimpulan,
+                dataPerkara.kesimpulan_desc
+            ),
             keputusan: dataPerkara.keputusan || "",
-            menghadirkan_pihak: dataPerkara.catatan_pihak?.map((c: any) => ({
-                tanggal: c.tanggal ? new Date(c.tanggal) : null,
-                para_pihak: c.para_pihak,
-                kedudukan: c.kedudukan,
-                keterangan: c.keterangan,
-            })) || [],
-            mediasi: dataPerkara.catatan_mediasi?.map((c: any) => ({
-                tanggal: c.tanggal ? new Date(c.tanggal) : null,
-                para_pihak: c.para_pihak,
-                kedudukan: c.kedudukan,
-                keterangan: c.keterangan,
-            })) || [],
+            menghadirkan_pihak:
+                dataPerkara.catatan_pihak?.map((c: any) => ({
+                    tanggal: c.tanggal ? new Date(c.tanggal) : null,
+                    para_pihak: c.para_pihak,
+                    kedudukan: c.kedudukan,
+                    keterangan: c.keterangan,
+                })) || [],
+            mediasi:
+                dataPerkara.catatan_mediasi?.map((c: any) => ({
+                    tanggal: c.tanggal ? new Date(c.tanggal) : null,
+                    para_pihak: c.para_pihak,
+                    kedudukan: c.kedudukan,
+                    keterangan: c.keterangan,
+                })) || [],
         }));
     }, [dataPerkara]);
+    console.log(dataPerkara, "data perkara");
 
     // Stepper
     const steps: Step[] = [
@@ -315,7 +336,7 @@ export default function StepperPerkara() {
                                         type="button"
                                         label="Lihat Surat Permohonan"
                                         icon="pi pi-external-link"
-                                        onClick={() => window.open(`${API_BASE}/uploads/${dataPerkara?.surat_permohonan}`, "_blank")}
+                                        onClick={() => window.open(`${API_BASE}/${dataPerkara?.surat_permohonan}`, "_blank")}
                                         className="p-button-outlined p-button-sm"
                                     />
                                 </div>
@@ -348,7 +369,12 @@ export default function StepperPerkara() {
                     <h2 className="text-lg font-bold mb-2">📑 Resume</h2>
                     <p className="text-gray-600 mb-6">Unggah dokumen resume di sini...</p>
 
-                    <input type="file" id="resumeFile" className="hidden" onChange={(e) => handleFileSelect(e, "resumeFile")} />
+                    <input
+                        type="file"
+                        id="resumeFile"
+                        className="hidden"
+                        onChange={(e) => handleFileSelect(e, "resumeFile")}
+                    />
                     <label
                         htmlFor="resumeFile"
                         className="cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center bg-white text-gray-500 hover:border-[#0B5C4D] transition"
@@ -358,24 +384,19 @@ export default function StepperPerkara() {
                         <p className="text-sm">Klik atau drag & drop</p>
                     </label>
 
-                    {formData.resumeFile && (
-                        <div className="mt-3 text-sm text-gray-700">
-                            <p>File: <span className="font-semibold">{formData.resumeFile?.file?.name}</span></p>
-                            <p>Deskripsi: {formData.resumeFile.deskripsi || "-"}</p>
-                        </div>
-                    )}
+                    {renderFilePreview("resumeFile", "Resume", "resume")}
 
                     <div className="flex justify-between mt-10">
-                        <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(1)} />
-                        <div className="flex justify-end gap-2 ">
-                            <Button label="Simpan" className="p-button-text" onClick={() => handleUpdate()} />
+                        <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(currentStep - 1)} />
+                        <div className="flex justify-end gap-4 ">
+                            <Button label="Simpan" className="p-button-success" onClick={() => handleUpdate()} />
                             <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(currentStep + 1)} />
-
                         </div>
                     </div>
                 </div>
             ),
         },
+
 
         {
             label: "SKK dan SPT",
@@ -393,12 +414,7 @@ export default function StepperPerkara() {
                                 <h3 className="font-semibold mb-2 text-gray-700">📄 SKK</h3>
                                 <p className="text-sm">Klik atau drag & drop file SKK</p>
                             </label>
-                            {formData.skkFile && (
-                                <div className="mt-3 text-sm text-gray-700">
-                                    <p>File: <span className="font-semibold">{formData.skkFile.file.name}</span></p>
-                                    <p>Deskripsi: {formData.skkFile.deskripsi || "-"}</p>
-                                </div>
-                            )}
+                            {renderFilePreview("skkFile", "SKK", "skk")}
                         </div>
 
                         {/* SPT */}
@@ -409,22 +425,21 @@ export default function StepperPerkara() {
                                 <h3 className="font-semibold mb-2 text-gray-700">📄 SPT</h3>
                                 <p className="text-sm">Klik atau drag & drop file SPT</p>
                             </label>
-                            {formData.sptFile && (
-                                <div className="mt-3 text-sm text-gray-700">
-                                    <p>File: <span className="font-semibold">{formData.sptFile.file.name}</span></p>
-                                    <p>Deskripsi: {formData.sptFile.deskripsi || "-"}</p>
-                                </div>
-                            )}
+                            {renderFilePreview("sptFile", "SPT", "spt")}
                         </div>
                     </div>
 
-                    <div className="flex justify-between mt-8">
+                    <div className="flex justify-between mt-10">
                         <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(currentStep - 1)} />
-                        <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(currentStep + 1)} />
+                        <div className="flex gap-4">
+                            <Button label="Simpan" className="p-button-success" onClick={() => handleUpdate()} />
+                            <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(currentStep + 1)} />
+                        </div>
                     </div>
                 </div>
             ),
         },
+
         {
             label: "Catatan Sidang",
             content: (
@@ -564,11 +579,10 @@ export default function StepperPerkara() {
                             className="p-button-secondary"
                             onClick={() => setCurrentStep(currentStep - 1)}
                         />
-                        <Button
-                            label="Selanjutnya"
-                            className="p-button-warning"
-                            onClick={() => setCurrentStep(currentStep + 1)}
-                        />
+                        <div className="flex gap-4">
+                            <Button label="Simpan" className="p-button-success" onClick={() => handleUpdate()} />
+                            <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(currentStep + 1)} />
+                        </div>
                     </div>
                 </div>
             ),
@@ -591,16 +605,15 @@ export default function StepperPerkara() {
                         <p className="text-sm">Klik atau drag & drop</p>
                     </label>
 
-                    {formData.jawabanFile && (
-                        <div className="mt-3 text-sm text-gray-700">
-                            <p>File: <span className="font-semibold">{formData.jawabanFile.file.name}</span></p>
-                            <p>Deskripsi: {formData.jawabanFile.deskripsi || "-"}</p>
-                        </div>
-                    )}
+                    {renderFilePreview("jawabanFile", "Jawaban", "jawaban")}
 
                     <div className="flex justify-between mt-10">
                         <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(1)} />
-                        <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(currentStep + 1)} />
+                        <div className="justify-end gap-4 flex">
+                            <Button label="Simpan" className="p-button-warning" onClick={() => handleUpdate()} />
+                            <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(currentStep + 1)} />
+
+                        </div>
                     </div>
                 </div>
 
@@ -625,16 +638,15 @@ export default function StepperPerkara() {
                         <p className="text-sm">Klik atau drag & drop</p>
                     </label>
 
-                    {formData.replikFile && (
-                        <div className="mt-3 text-sm text-gray-700">
-                            <p>File: <span className="font-semibold">{formData.replikFile.file.name}</span></p>
-                            <p>Deskripsi: {formData.replikFile.deskripsi || "-"}</p>
-                        </div>
-                    )}
+                    {renderFilePreview("replikFile", "Replik", "replik")}
 
                     <div className="flex justify-between mt-10">
                         <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(1)} />
-                        <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(currentStep + 1)} />
+                        <div className="justify-end gap-4 flex">
+                            <Button label="Simpan" className="p-button-warning" onClick={() => handleUpdate()} />
+                            <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(currentStep + 1)} />
+
+                        </div>
                     </div>
                 </div>
 
@@ -659,16 +671,15 @@ export default function StepperPerkara() {
                         <p className="text-sm">Klik atau drag & drop</p>
                     </label>
 
-                    {formData.duplikFile && (
-                        <div className="mt-3 text-sm text-gray-700">
-                            <p>File: <span className="font-semibold">{formData.duplikFile.file.name}</span></p>
-                            <p>Deskripsi: {formData.duplikFile.deskripsi || "-"}</p>
-                        </div>
-                    )}
+                    {renderFilePreview("duplikFile", "Duplik", "duplik")}
 
                     <div className="flex justify-between mt-10">
                         <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(1)} />
-                        <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(currentStep + 1)} />
+                        <div className="justify-end gap-4 flex">
+                            <Button label="Simpan" className="p-button-warning" onClick={() => handleUpdate()} />
+                            <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(currentStep + 1)} />
+
+                        </div>
                     </div>
                 </div>
 
@@ -692,17 +703,15 @@ export default function StepperPerkara() {
                         <p className="text-sm">Klik atau drag & drop</p>
                     </label>
 
-                    {formData.putusan_selaFile && (
-                        <div className="mt-3 text-sm text-gray-700">
-                            <p>File: <span className="font-semibold">{formData.putusan_selaFile.file.name}</span></p>
-                            <p>Deskripsi: {formData.putusan_selaFile.deskripsi || "-"}</p>
-                        </div>
-                    )}
+                    {renderFilePreview("putusan_selaFile", "Putusan Sela", "putusan_sela")}
 
                     <div className="flex justify-between mt-10">
                         <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(1)} />
-                        <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(currentStep + 1)} />
-                    </div>
+                        <div className="justify-end gap-4 flex">
+                            <Button label="Simpan" className="p-button-warning" onClick={() => handleUpdate()} />
+                            <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(currentStep + 1)} />
+
+                        </div>                    </div>
                 </div>
 
             ),
@@ -725,16 +734,15 @@ export default function StepperPerkara() {
                         <p className="text-sm">Klik atau drag & drop</p>
                     </label>
 
-                    {formData.kesimpulanFile && (
-                        <div className="mt-3 text-sm text-gray-700">
-                            <p>File: <span className="font-semibold">{formData.kesimpulanFile.file.name}</span></p>
-                            <p>Deskripsi: {formData.kesimpulanFile.deskripsi || "-"}</p>
-                        </div>
-                    )}
+                    {renderFilePreview("kesimpulanFile", "Kesimpulan", "kesimpulan")}
 
                     <div className="flex justify-between mt-10">
                         <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(1)} />
-                        <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(currentStep + 1)} />
+                        <div className="flex justify-end gap-4 ">
+                            <Button label="Simpan" className="p-button-warning" onClick={() => handleUpdate()} />
+                            <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(currentStep + 1)} />
+
+                        </div>
                     </div>
                 </div>
 
@@ -763,16 +771,7 @@ export default function StepperPerkara() {
                         <p className="text-sm">Klik atau drag & drop</p>
                     </label>
 
-                    {/* Preview File */}
-                    {formData.putusan_majelisFile && (
-                        <div className="mt-3 text-sm text-gray-700">
-                            <p>
-                                File: <span className="font-semibold">{formData.putusan_majelisFile.file.name}</span>
-                            </p>
-                            <p>Deskripsi: {formData.putusan_majelisFile.deskripsi || "-"}</p>
-                        </div>
-                    )}
-
+                    {renderFilePreview("putusan_majelisFile", "Putusan Majelis", "putusan_majelis")}
                     {/* Keputusan Menang/Kalah */}
                     <div className="mt-6">
                         <label className="font-medium text-gray-700 mb-2 block">Keputusan</label>
@@ -789,13 +788,12 @@ export default function StepperPerkara() {
                     </div>
 
                     {/* Navigasi */}
-                    <div className="flex justify-between mt-10">
-                        <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(1)} />
-                        <Button
-                            label="Selanjutnya"
-                            className="p-button-warning"
-                            onClick={() => setCurrentStep(currentStep + 1)}
-                        />
+                    <div className="flex justify-end gap-4 mt-10">
+
+                        <Button label="Simpan" className="p-button-secondary" onClick={() => handleUpdate()} />
+                        <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(currentStep - 1)} />
+
+
                     </div>
                 </div>
             ),

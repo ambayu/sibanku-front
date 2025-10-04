@@ -24,19 +24,27 @@ const menuGroups: MenuGroup[] = [
       { name: "Dashboard", path: "/admin" },
       {
         name: "Perkara",
-        children: [{
-          name: "Daftar Perkara",
-          path: "/admin/perkara"
-        }],
+        path: "/admin/perkara"
+
       },
-  
+
       {
-        name: "Konsinyasi",
-        children: [
-          { name: "Daftar Konsinyasi", path: "/admin/konsinyasi" },
-          { name: "Tambah Konsinyasi", path: "/admin/konsinyasi/tambah" },
-        ],
+        name: "Banding",
+        path: "/admin/banding"
+
       },
+      {
+        name: "Kasasi",
+        path: "/admin/kasasi"
+
+      },
+      {
+        name: "Peninjauan Kembali",
+        path: "/admin/peninjauan-kembali"
+
+
+      },
+
       { name: "Laporan", path: "/admin/laporan" },
     ],
   },
