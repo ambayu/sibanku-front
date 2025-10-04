@@ -34,7 +34,7 @@ const menuGroups: MenuGroup[] = [
 
       },
       {
-        name: "Kasasi",
+        name: "Kasasi", 
         path: "/admin/kasasi"
 
       },

@@ -11,20 +11,21 @@ import { Tooltip } from "primereact/tooltip";
 
 
 
-export default function PerkaraPage() {
+export default function BandingPage() {
   const route = useRouter();
   const { showAlert } = useAlert();
 
-  const { data: dataPerkara, isLoading, mutate } = RealfindAll("");
-  console.log(dataPerkara, "data perkara");
+  const { data: dataBanding, isLoading, mutate } = RealfindAll("");
+  console.log(dataBanding, "data banding");
   return (
     <div className="p-6">
       <ConfirmDialog />
       <DataTable
         isLoading={isLoading}
-        data={dataPerkara}
+        data={dataBanding}
         columns={[
           { header: "No", accessor: "no" },
+          { header: "Nomor Banding", accessor: "nomor_banding", render: (_: any, row: any) => row.Banding[0].nomor_banding || "-" },
           { header: "Nomor Perkara", accessor: "nomor_perkara" },
           { header: "Pihak", accessor: "pihak" },
           { header: "Panitra Pengganti", accessor: "panitra_pengganti" },
@@ -49,20 +50,20 @@ export default function PerkaraPage() {
                   text
                   size="small"
                   severity="info"
-                  tooltip="Edit Perkara"
+                  tooltip="Edit Banding"
                   tooltipOptions={{
                     position: "bottom",
                   }}
 
                   onClick={() => {
-                    route.push(`/admin/perkara/edit/${row.id}`);
+                    route.push(`/admin/banding/edit/${row.Banding[0].id}`);
                   }}
                 />
                 <Button
                   icon="pi pi-trash"
                   rounded
                   text
-                  tooltip="Hapus Perkara"
+                  tooltip="Hapus Banding"
                   tooltipOptions={{
                     position: "bottom",
                   }}
@@ -70,18 +71,19 @@ export default function PerkaraPage() {
                   severity="danger"
                   onClick={() => {
                     confirmDialog({
-                      message: "Apakah Anda yakin ingin menghapus perkara ini?",
+                      message: "Apakah Anda yakin ingin menghapus banding ini?",
                       header: "Konfirmasi Hapus",
                       icon: "pi pi-exclamation-triangle",
                       acceptLabel: "Ya, Hapus",
                       rejectLabel: "Batal",
                       accept: async () => {
                         try {
-                          await remove(row.id);
+                          await remove(row.Banding[0].id);
+                          mutate();
 
-                          showAlert("success", "Perkara berhasil dihapus ✅");
+                          showAlert("success", "Banding berhasil dihapus ✅");
                         } catch (error: any) {
-                          showAlert("error", error.message || "Gagal menghapus perkara");
+                          showAlert("error", error.message || "Gagal menghapus banding");
                         }
                       },
                     });
@@ -93,13 +95,13 @@ export default function PerkaraPage() {
                   text
                   size="small"
                   severity="info"
-                  tooltip="Lihat Perkara"
+                  tooltip="Lihat Banding"
                   tooltipOptions={{
                     position: "bottom",
                   }}
 
                   onClick={() => {
-                    route.push(`/admin/perkara/view/${row.id}`);
+                    route.push(`/admin/banding/view/${row.id}`);
                   }}
                 />
 

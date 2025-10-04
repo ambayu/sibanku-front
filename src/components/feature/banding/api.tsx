@@ -1,7 +1,7 @@
 import useSWR, { mutate } from "swr";
 import { getSession } from "next-auth/react";
 
-const url = process.env.NEXT_PUBLIC_API_URL + "/perkara";
+const url = process.env.NEXT_PUBLIC_API_URL + "/banding";
 
 
 // Fetcher dengan Bearer Token
@@ -104,8 +104,9 @@ export async function create(data: any) {
         method: "POST",
         headers: {
             Authorization: `Bearer ${session?.accessToken}`,
+            "Content-Type": "application/json",
         },
-        body: data,
+        body: JSON.stringify(data),
     });
 
     const resData = await response.json();
