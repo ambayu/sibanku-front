@@ -157,7 +157,7 @@ export default function ProfilePage() {
 
                 {/* Informasi Akun & Foto Profil - DIGABUNG */}
                 <Card className="shadow-sm border mb-6">
-                    <div className="flex flex-col md:flex-row gap-6">
+                    <div className="flex flex-col md:flex-row gap-15">
                         {/* Foto Profil */}
                         <div className="flex-shrink-0">
                             <div className="text-center">

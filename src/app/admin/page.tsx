@@ -1,4 +1,10 @@
+"use client";
+import { LaporanPerkara } from "@/components/feature/perkara/api";
+
 export default function DashboardPage() {
+
+  const { data:dataLaporanPerkara, isLoading: isLoadingLaporanPerkara } = LaporanPerkara();
+  console.log(dataLaporanPerkara,"asdasd");
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Dashboard</h1>

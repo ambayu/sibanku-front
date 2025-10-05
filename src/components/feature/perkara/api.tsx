@@ -179,3 +179,20 @@ export async function remove(id: number) {
     }
     return resData;
 }
+
+
+export function LaporanPerkara(search?: string) {
+
+    const fullUrl = `${url}/laporan-perkara`;
+    const { data, error, isLoading } = useSWR(fullUrl, fetcher);
+    console.log(data,"asd");
+    return {
+        data: data?.page_data,
+        message: data?.message,
+        isLoading,
+        isError: !!error,
+        errorMessage: error?.message,
+        statusCode: error?.statusCode,
+        mutate: () => mutate(fullUrl),
+    };
+}

@@ -4,6 +4,7 @@ import { useSidebar } from "@/context/SidebarContext";
 import { useTheme } from "@/context/ThemeContext";
 import { Menu, Sun, Moon, User, ChevronDown, LogOut, Settings } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
+import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 
 export default function AppHeader() {
@@ -21,7 +22,7 @@ export default function AppHeader() {
 
   const userName = userData?.name || "Pengguna";
   const userEmail = (userData as any)?.email || "";
-  
+
   // 🔧 Beri tahu TypeScript bahwa userData bisa punya properti tambahan
   const userDataSafe = userData as {
     name?: string;
@@ -77,7 +78,7 @@ export default function AppHeader() {
         >
           <Menu className="h-6 w-6" />
         </button>
-        
+
         {/* Page Title - bisa disesuaikan dengan halaman aktif */}
         <div className="ml-4">
           <h1 className="text-lg font-semibold text-gray-800">
@@ -111,7 +112,7 @@ export default function AppHeader() {
             <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gradient-to-br from-[#0B5C4D] to-[#1a936f] text-white font-medium text-sm">
               {getInitials(userName)}
             </div>
-            
+
             {/* User Info - hidden on mobile */}
             <div className="hidden sm:block text-left">
               <p className="font-medium text-gray-800 text-sm leading-tight">
@@ -121,11 +122,10 @@ export default function AppHeader() {
                 {userRole}
               </p>
             </div>
-            
-            <ChevronDown 
-              className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${
-                isUserDropdownOpen ? 'rotate-180' : ''
-              }`} 
+
+            <ChevronDown
+              className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${isUserDropdownOpen ? 'rotate-180' : ''
+                }`}
             />
           </button>
 
@@ -151,18 +151,17 @@ export default function AppHeader() {
               <div className="py-2">
                 <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3">
                   <User className="h-4 w-4" />
-                  Profile Saya
+                  <Link href="/admin/profile" className="text-gray-600 hover:text-gray-800">
+                    Profile Saya
+                  </Link>
                 </button>
-                
-                <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3">
-                  <Settings className="h-4 w-4" />
-                  Pengaturan
-                </button>
+
+   
               </div>
 
               {/* Logout Button */}
               <div className="pt-2 border-t border-gray-100">
-                <button 
+                <button
                   onClick={handleSignOut}
                   className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3"
                 >
