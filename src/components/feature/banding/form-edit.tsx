@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import DataTable from "@/components/ui/DataTable";
-import { RealfindAll } from "../perkara/api";
+import {  RealfindAll } from "../perkara/api";
 import { useAlert } from "@/context/AlertContext";
 import { create, findOne, update } from "./api";
 import { useParams } from "next/navigation";
@@ -12,7 +12,8 @@ import { Skeleton } from "primereact/skeleton";
 
 export default function BandingFormEdit() {
     const { showAlert } = useAlert();
-    const { data: dataPerkara, isLoading: isLoadingPerkara } = RealfindAll("");
+    const { data: dataPerkara, isLoading: isLoadingPerkara } = RealfindAll();
+    console.log(dataPerkara, "dataPerkara");
     const param = useParams();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -38,7 +39,7 @@ export default function BandingFormEdit() {
         }
 
         try {
-            await update(Number(param.id),payload);
+            await update(Number(param.id), payload);
             showAlert("success", `Nomor banding ${nomorBanding} berhasil disimpan`);
         } catch (error: any) {
             showAlert("error", error.message || "Gagal menyimpan nomor banding");
@@ -81,7 +82,7 @@ export default function BandingFormEdit() {
             <div className="w-full">
                 <DataTable
                     isLoading={isLoadingPerkara}
-                    data={dataPerkara}
+                    data={dataPerkara?.data}
                     columns={[
                         { header: "No", accessor: "no" },
                         { header: "Nomor Perkara", accessor: "nomor_perkara" },

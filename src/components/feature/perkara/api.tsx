@@ -122,7 +122,7 @@ export async function create(data: any) {
 export async function update(id: number, data: any) {
     const session = await getSession();
     const response = await fetch(`${url}/${id}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: {
             Authorization: `Bearer ${session?.accessToken}`,
         },

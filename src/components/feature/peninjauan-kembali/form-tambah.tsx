@@ -4,14 +4,14 @@ import { useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import DataTable from "@/components/ui/DataTable";
-import { RealfindAll } from "../perkara/api";
 import { useAlert } from "@/context/AlertContext";
 import { create } from "./api";
+import { RealfindAll } from "../kasasi/api";
 
 export default function PeninjauanKembaliForm() {
     const { showAlert } = useAlert();
     const { data: dataPeninjauanKembali, isLoading: isLoadingPeninjauanKembali } = RealfindAll("");
-
+    console.log(dataPeninjauanKembali, "dataPeninjauanKembali----");
     const [isLoading, setIsLoading] = useState(false);
     const [nomorPeninjauanKembali, setNomorPeninjauanKembali] = useState("");
     const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -21,7 +21,7 @@ export default function PeninjauanKembaliForm() {
         setIsLoading(true);
         const payload = {
             nomor_pk: nomorPeninjauanKembali,
-            id_perkara: selectedId
+            id_kasasi: selectedId
         }
 
         try {
@@ -62,7 +62,7 @@ export default function PeninjauanKembaliForm() {
             </form>
 
             {/* Tabel Data */}
-            <h2 className="text-2xl font-semibold text-black my-4 col-span-2">Daftar Perkara</h2>
+            <h2 className="text-2xl font-semibold text-black my-4 col-span-2">Daftar Kasasi</h2>
 
             <div className="w-full">
                 <DataTable
@@ -70,24 +70,25 @@ export default function PeninjauanKembaliForm() {
                     data={dataPeninjauanKembali}
                     columns={[
                         { header: "No", accessor: "no" },
-                        { header: "Nomor Perkara", accessor: "nomor_perkara" },
-                        { header: "Pihak", accessor: "pihak" },
-                        { header: "Panitra Pengganti", accessor: "panitra_pengganti" },
+                        { header: "Nomor Perkara", accessor: "nomor_perkara", render: (_: any, row: any) => row.banding?.perkara?.nomor_perkara || "-" },
+                        { header: "Nomor Banding", accessor: "nomor_banding", render: (_: any, row: any) => row.banding?.nomor_banding || "-" },
+                        { header: "Nomor Kasasi", accessor: "nomor_kasasi", render: (_: any, row: any) => row.nomor_kasasi || "-" },
+                        { header: "Pihak", accessor: "pihak", render: (_: any, row: any) => row.banding?.perkara?.pihak || "-" },
+                        { header: "Panitra Pengganti", accessor: "panitra_pengganti", render: (_: any, row: any) => row.banding?.perkara?.panitra_pengganti || "-" },
                         {
                             header: "Penanggung Jawab",
                             accessor: "penanggung_jawabs",
-                            render: (value) =>
-                                value?.map((pj: any) => pj.nama).join(", ") || "-",
+                            render: (_: any, row: any) => row.banding?.perkara?.penanggung_jawabs.map((pj: any) => pj.nama).join(", ")
                         },
                         {
                             header: "Dibuat Oleh",
                             accessor: "CreatedByUser.name",
-                            render: (_: any, row: any) => row.CreatedByUser?.name || "-",
+                            render: (_: any, row: any) => row.createdByUser?.name || "-",
                         },
                         {
                             header: "Diubah Oleh",
                             accessor: "UpdatedByUser.name",
-                            render: (_: any, row: any) => row.UpdatedByUser?.name || "-",
+                            render: (_: any, row: any) => row.updatedByUser?.name || "-",
                         },
                         {
                             header: "Actions",

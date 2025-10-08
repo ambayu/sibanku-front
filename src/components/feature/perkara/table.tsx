@@ -9,8 +9,6 @@ import { mutate } from "swr";
 import { useAlert } from "@/context/AlertContext";
 import { Tooltip } from "primereact/tooltip";
 
-
-
 export default function PerkaraPage() {
   const route = useRouter();
   const { showAlert } = useAlert();
@@ -35,6 +33,9 @@ export default function PerkaraPage() {
 
 
           },
+          { header: "Keputusan", accessor: "keputusan" },
+          { header: "Status", accessor: "status" },
+
           { header: "Dibuat Oleh", accessor: "CreatedByUser.name", render: (_: any, row: any) => row.CreatedByUser?.name || "-" },
           { header: "DiUbah Oleh", accessor: "UpdatedByUser.name", render: (_: any, row: any) => row.UpdatedByUser?.name || "-" },
 
@@ -78,7 +79,7 @@ export default function PerkaraPage() {
                       accept: async () => {
                         try {
                           await remove(row.id);
-
+                          mutate();
                           showAlert("success", "Perkara berhasil dihapus ✅");
                         } catch (error: any) {
                           showAlert("error", error.message || "Gagal menghapus perkara");

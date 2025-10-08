@@ -16,6 +16,7 @@ export default function BandingPage() {
   const { showAlert } = useAlert();
 
   const { data: dataBanding, isLoading, mutate } = RealfindAll("");
+  console.log(dataBanding);
   return (
     <div className="p-6">
       <ConfirmDialog />
@@ -24,19 +25,19 @@ export default function BandingPage() {
         data={dataBanding}
         columns={[
           { header: "No", accessor: "no" },
-          { header: "Nomor Banding", accessor: "nomor_banding", render: (_: any, row: any) => row.Banding[0].nomor_banding || "-" },
-          { header: "Nomor Perkara", accessor: "nomor_perkara" },
-          { header: "Pihak", accessor: "pihak" },
-          { header: "Panitra Pengganti", accessor: "panitra_pengganti" },
+          { header: "Nomor Banding", accessor: "nomor_banding"},
+          { header: "Nomor Perkara", accessor: "nomor_perkara", render: (_: any, row: any) => row.perkara?.nomor_perkara || "-" },
+          { header: "Pihak", accessor: "pihak", render: (_: any, row: any) => row.perkara?.pihak || "-" },
+          { header: "Panitra Pengganti", accessor: "panitra_pengganti", render: (_: any, row: any) => row.perkara?.panitra_pengganti || "-" },
           {
-            header: "Penanggung Jawab", accessor: "penanggung_jawabs",
-
-            render: (value) => value.map((pj: any) => pj.nama).join(", ")
+            header: "Penanggung Jawab", accessor: "penanggung_jawabs", render: (_: any, row: any) => row.perkara?.penanggung_jawabs.map((pj: any) => pj.nama).join(", ")
 
 
           },
-          { header: "Dibuat Oleh", accessor: "CreatedByUser.name", render: (_: any, row: any) => row.CreatedByUser?.name || "-" },
-          { header: "DiUbah Oleh", accessor: "UpdatedByUser.name", render: (_: any, row: any) => row.UpdatedByUser?.name || "-" },
+          { header: "Status", accessor: "status" },
+
+          { header: "Dibuat Oleh", accessor: "CreatedByUser.name", render: (_: any, row: any) => row.createdByUser?.name || "-" },
+          { header: "DiUbah Oleh", accessor: "UpdatedByUser.name", render: (_: any, row: any) => row.updatedByUser?.name || "-" },
 
           {
             header: "Actions",
@@ -55,7 +56,7 @@ export default function BandingPage() {
                   }}
 
                   onClick={() => {
-                    route.push(`/admin/banding/edit/${row.Banding[0].id}`);
+                    route.push(`/admin/banding/edit/${row.id}`);
                   }}
                 />
                 <Button
@@ -77,7 +78,7 @@ export default function BandingPage() {
                       rejectLabel: "Batal",
                       accept: async () => {
                         try {
-                          await remove(row.Banding[0].id);
+                          await remove(row.id);
                           mutate();
 
                           showAlert("success", "Banding berhasil dihapus ✅");
@@ -100,7 +101,7 @@ export default function BandingPage() {
                   }}
 
                   onClick={() => {
-                    route.push(`/admin/banding/view/${row.Banding[0].id}`);
+                    route.push(`/admin/banding/view/${row.id}`);
                   }}
                 />
 

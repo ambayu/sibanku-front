@@ -9,10 +9,11 @@ import { useAlert } from "@/context/AlertContext";
 import { create, findOne, update } from "./api";
 import { useParams } from "next/navigation";
 import { Skeleton } from "primereact/skeleton";
+import { findAll } from "../banding/api";
 
 export default function KasasiFormEdit() {
     const { showAlert } = useAlert();
-    const { data: dataPerkara, isLoading: isLoadingPerkara } = RealfindAll("");
+    const { data: dataPerkara, isLoading: isLoadingPerkara } = findAll(1, 10000);
     const param = useParams();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -34,11 +35,11 @@ export default function KasasiFormEdit() {
         setIsLoading(true);
         const payload = {
             nomor_kasasi: nomorKasasi,
-            id_perkara: selectedId
+            id_banding: selectedId
         }
 
         try {
-            await update(Number(param.id),payload);
+            await update(Number(param.id), payload);
             showAlert("success", `Nomor kasasi ${nomorKasasi} berhasil disimpan`);
         } catch (error: any) {
             showAlert("error", error.message || "Gagal menyimpan nomor kasasi");
@@ -48,7 +49,7 @@ export default function KasasiFormEdit() {
     };
 
     const handleSelect = (row: any) => {
-        setSelectedId(row.id);
+        setSelectedId(row.id || null);
 
     };
 
@@ -76,7 +77,7 @@ export default function KasasiFormEdit() {
             </form>
 
             {/* Tabel Data */}
-            <h2 className="text-2xl font-semibold my-4 col-span-2">Daftar Perkara</h2>
+            <h2 className="text-2xl font-semibold my-4 col-span-2">Daftar Kasasi</h2>
 
             <div className="w-full">
                 <DataTable
@@ -84,24 +85,24 @@ export default function KasasiFormEdit() {
                     data={dataPerkara}
                     columns={[
                         { header: "No", accessor: "no" },
-                        { header: "Nomor Perkara", accessor: "nomor_perkara" },
-                        { header: "Pihak", accessor: "pihak" },
-                        { header: "Panitra Pengganti", accessor: "panitra_pengganti" },
+                        { header: "Nomor Perkara", accessor: "nomor_perkara", render: (_: any, row: any) => row.perkara?.nomor_perkara || "-" },
+                        { header: "Nomor Banding", accessor: "nomor_banding", },
+                        { header: "Pihak", accessor: "pihak", render: (_: any, row: any) => row.perkara?.pihak || "-" },
+                        { header: "Panitra Pengganti", accessor: "panitra_pengganti", render: (_: any, row: any) => row.perkara?.panitra_pengganti || "-" },
                         {
                             header: "Penanggung Jawab",
                             accessor: "penanggung_jawabs",
-                            render: (value) =>
-                                value?.map((pj: any) => pj.nama).join(", ") || "-",
+                            render: (_: any, row: any) => row.perkara?.penanggung_jawabs.map((pj: any) => pj.nama).join(", ")
                         },
                         {
                             header: "Dibuat Oleh",
                             accessor: "CreatedByUser.name",
-                            render: (_: any, row: any) => row.CreatedByUser?.name || "-",
+                            render: (_: any, row: any) => row.createdByUser?.name || "-",
                         },
                         {
                             header: "Diubah Oleh",
                             accessor: "UpdatedByUser.name",
-                            render: (_: any, row: any) => row.UpdatedByUser?.name || "-",
+                            render: (_: any, row: any) => row.updatedByUser?.name || "-",
                         },
                         {
                             header: "Actions",

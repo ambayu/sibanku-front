@@ -4,15 +4,16 @@ import { useEffect, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import DataTable from "@/components/ui/DataTable";
-import { RealfindAll } from "../perkara/api";
 import { useAlert } from "@/context/AlertContext";
 import { create, findOne, update } from "./api";
 import { useParams } from "next/navigation";
 import { Skeleton } from "primereact/skeleton";
+import { RealfindAll } from "../kasasi/api";
 
 export default function PeninjauanKembaliFormEdit() {
     const { showAlert } = useAlert();
     const { data: dataPerkara, isLoading: isLoadingPerkara } = RealfindAll("");
+    console.log(dataPerkara, "dataPerkara");
     const param = useParams();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -34,11 +35,11 @@ export default function PeninjauanKembaliFormEdit() {
         setIsLoading(true);
         const payload = {
             nomor_pk: nomorPeninjauanKembali,
-            id_perkara: selectedId
+            id_kasasi: selectedId
         }
 
         try {
-            await update(Number(param.id),payload);
+            await update(Number(param.id), payload);
             showAlert("success", `Nomor peninjauan kembali ${nomorPeninjauanKembali} berhasil disimpan`);
         } catch (error: any) {
             showAlert("error", error.message || "Gagal menyimpan nomor peninjauan kembali");
@@ -84,24 +85,25 @@ export default function PeninjauanKembaliFormEdit() {
                     data={dataPerkara}
                     columns={[
                         { header: "No", accessor: "no" },
-                        { header: "Nomor Perkara", accessor: "nomor_perkara" },
-                        { header: "Pihak", accessor: "pihak" },
-                        { header: "Panitra Pengganti", accessor: "panitra_pengganti" },
+                        { header: "Nomor Perkara", accessor: "nomor_perkara", render: (_: any, row: any) => row.banding?.perkara?.nomor_perkara || "-" },
+                        { header: "Nomor Banding", accessor: "nomor_banding", render: (_: any, row: any) => row.banding?.nomor_banding || "-" },
+                        { header: "Nomor Kasasi", accessor: "nomor_kasasi", render: (_: any, row: any) => row.nomor_kasasi || "-" },
+                        { header: "Pihak", accessor: "pihak", render: (_: any, row: any) => row.banding?.perkara?.pihak || "-" },
+                        { header: "Panitra Pengganti", accessor: "panitra_pengganti", render: (_: any, row: any) => row.banding?.perkara?.panitra_pengganti || "-" },
                         {
                             header: "Penanggung Jawab",
                             accessor: "penanggung_jawabs",
-                            render: (value) =>
-                                value?.map((pj: any) => pj.nama).join(", ") || "-",
+                            render: (_: any, row: any) => row.banding?.perkara?.penanggung_jawabs.map((pj: any) => pj.nama).join(", ")
                         },
                         {
                             header: "Dibuat Oleh",
                             accessor: "CreatedByUser.name",
-                            render: (_: any, row: any) => row.CreatedByUser?.name || "-",
+                            render: (_: any, row: any) => row.createdByUser?.name || "-",
                         },
                         {
                             header: "Diubah Oleh",
                             accessor: "UpdatedByUser.name",
-                            render: (_: any, row: any) => row.UpdatedByUser?.name || "-",
+                            render: (_: any, row: any) => row.updatedByUser?.name || "-",
                         },
                         {
                             header: "Actions",

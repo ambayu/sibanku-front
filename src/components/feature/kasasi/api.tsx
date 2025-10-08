@@ -68,7 +68,7 @@ export function RealfindAll(search?: string) {
     }
     const fullUrl = `${url}/all${queryParams}`;
     const { data, error, isLoading } = useSWR(fullUrl, fetcher);
-    console.log(data,"asd");
+
     return {
         data: data?.page_data,
         message: data?.message,

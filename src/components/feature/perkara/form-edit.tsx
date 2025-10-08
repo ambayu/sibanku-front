@@ -24,35 +24,39 @@ export default function PerkaraFormEdit() {
 
     const [form, setForm] = useState({
         surat_permohonan: null as File | null | string,
+        relas: null as File | null | string,
+        gugatan_upload: null as File | null | string,
         hari: "",
         tanggal: null as Date | null,
         ruang_sidang: "",
         agenda: "",
         penggugat: "",
         tergugat: "",
+        turut_tergugat: "",
         nomor_perkara: "",
         tanggal_perkara: null as Date | null,
         gugatan: "",
         panitra_pengganti: "",
         pihak: "",
-        penanggung_jawab: [] as string[], // ⬅️ array
-
+        penanggung_jawab: [] as string[],
     });
 
-    // fetch data lama
     const { data, isLoading: isLoadingData } = findOne(Number(param.id));
-    console.log(data, "data");
+
     useEffect(() => {
         if (!data) return;
         const perkara = data;
         setForm({
             surat_permohonan: perkara.surat_permohonan ?? null,
+            relas: perkara.relas ?? null,
+            gugatan_upload: perkara.gugatan_upload ?? null,
             hari: perkara.hari ?? "",
             tanggal: perkara.tanggal ? new Date(perkara.tanggal) : null,
             ruang_sidang: perkara.ruang_sidang ?? "",
             agenda: perkara.agenda ?? "",
             penggugat: perkara.penggugat ?? "",
             tergugat: perkara.tergugat ?? "",
+            turut_tergugat: perkara.turut_tergugat ?? "",
             nomor_perkara: perkara.nomor_perkara ?? "",
             tanggal_perkara: perkara.tanggal_perkara
                 ? new Date(perkara.tanggal_perkara)
@@ -60,57 +64,38 @@ export default function PerkaraFormEdit() {
             gugatan: perkara.gugatan ?? "",
             panitra_pengganti: perkara.panitra_pengganti ?? "",
             pihak: perkara.pihak ?? "",
-            penanggung_jawab: perkara.penanggung_jawabs.map((pj: any) => pj.nama),
-
+            penanggung_jawab: perkara.penanggung_jawabs?.map((pj: any) => pj.nama) ?? [],
         });
     }, [data]);
-    console.log(form, "form");
-    // url file lama dari server
-    const existingFileUrl = useMemo(() => {
-        if (typeof form.surat_permohonan === "string" && form.surat_permohonan) {
-            return `${API_BASE}/uploads/${form.surat_permohonan}`;
-        }
-        return null;
-    }, [form.surat_permohonan]);
 
-    // preview file baru (blob url)
-    const newFilePreviewUrl = useMemo(() => {
-        if (form.surat_permohonan instanceof File) {
-            return URL.createObjectURL(form.surat_permohonan);
-        }
+    // helper untuk preview file
+    const fileUrl = (path?: string | File | null) => {
+        if (path instanceof File) return URL.createObjectURL(path);
+        if (typeof path === "string" && path) return `${API_BASE}/uploads/${path}`;
         return null;
-    }, [form.surat_permohonan]);
+    };
 
-    const handleFileSelect = (e: FileUploadSelectEvent) => {
+    const handleFileSelect = (key: keyof typeof form, e: FileUploadSelectEvent) => {
         if (e.files && e.files.length > 0) {
-            setForm((prev) => ({ ...prev, surat_permohonan: e.files[0] }));
+            setForm((prev) => ({ ...prev, [key]: e.files[0] }));
         }
     };
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-
         try {
             const formData = new FormData();
-
             Object.entries(form).forEach(([key, value]) => {
                 if (value === null || value === undefined) return;
 
                 if (value instanceof Date) {
                     formData.append(key, value.toISOString());
-                }
-                else if (key === "surat_permohonan") {
-                    if (value instanceof File) {
-                        formData.append("surat_permohonan", value);
-                    }
-                }
-                else if (Array.isArray(value)) {
-                    value.forEach((v) => {
-                        formData.append(`${key}[]`, v); // kirim sebagai array
-                    });
-                }
-                else {
+                } else if (value instanceof File) {
+                    formData.append(key, value);
+                } else if (Array.isArray(value)) {
+                    value.forEach((v) => formData.append(`${key}[]`, v));
+                } else {
                     formData.append(key, value as any);
                 }
             });
@@ -119,254 +104,175 @@ export default function PerkaraFormEdit() {
             showAlert("success", "Perkara berhasil diperbarui ✅");
             router.push("/admin/perkara");
         } catch (err: any) {
-            showAlert("error", err.message || "Gagal update perkara");
+            showAlert("error", err.message || "Gagal update perkara ❌");
         } finally {
             setIsSubmitting(false);
-            if (newFilePreviewUrl) URL.revokeObjectURL(newFilePreviewUrl);
         }
     };
-
 
     return (
         <div className="flex justify-center">
             <Card className="w-full">
                 <form onSubmit={handleUpdate} className="flex flex-col gap-5">
-                    {/* ==== Upload & Preview Surat Permohonan ==== */}
-                    <div>
-                        <label className="block text-sm font-medium mb-2">
-                            Upload Surat Permohonan
-                        </label>
-                        {isLoadingData ? (
-                            <Skeleton height="2.5rem" className="w-full" />
-                        ) : (
-                            <>
-                                <FileUpload
-                                    mode="basic"
-                                    accept=".pdf,.jpg,.jpeg,.png,.webp"
-                                    chooseLabel="Pilih File"
-                                    className="w-full"
-                                    customUpload
-                                    auto={false}
-                                    onSelect={handleFileSelect}
-                                />
-
-                                {/* Tombol lihat file */}
-                                {newFilePreviewUrl ? (
-                                    <div className="mt-3">
-                                        <Button
-                                            type="button"
-                                            label="Lihat File Baru"
-                                            icon="pi pi-external-link"
-                                            onClick={() => window.open(newFilePreviewUrl, "_blank")}
-                                            className="p-button-outlined p-button-sm"
-                                        />
-                                        <p className="text-sm text-gray-600 mt-1">
-                                            {(form.surat_permohonan as File).name}
-                                        </p>
-                                    </div>
-                                ) : existingFileUrl ? (
-                                    <div className="mt-3">
-                                        <Button
-                                            type="button"
-                                            label="Lihat File Saat Ini"
-                                            icon="pi pi-external-link"
-                                            onClick={() => window.open(existingFileUrl!, "_blank")}
-                                            className="p-button-outlined p-button-sm"
-                                        />
-                                        <p className="text-sm text-gray-600 mt-1">
-                                            {String(form.surat_permohonan)}
-                                        </p>
-                                    </div>
-                                ) : null}
-                            </>
-                        )}
-                    </div>
-
-                    {/* ==== Hari ==== */}
-                    <InputWrapper
-                        label="Hari"
-                        loading={isLoadingData}
-                        children={
-                            <InputText
-                                value={form.hari}
-                                onChange={(e) => setForm({ ...form, hari: e.target.value })}
-                                placeholder="Contoh: Senin"
-                                className="w-full"
-                            />
-                        }
+                    {/* ==== FILE UPLOAD: SURAT PERMOHONAN ==== */}
+                    <FileField
+                        label="Upload Surat Permohonan"
+                        value={form.surat_permohonan}
+                        isLoading={isLoadingData}
+                        onSelect={(e) => handleFileSelect("surat_permohonan", e)}
                     />
 
-                    {/* ==== Tanggal ==== */}
-                    <InputWrapper
-                        label="Tanggal"
-                        loading={isLoadingData}
-                        children={
-                            <Calendar
-                                value={form.tanggal}
-                                onChange={(e) =>
-                                    setForm({ ...form, tanggal: e.value as Date | null })
-                                }
-                                className="w-full"
-                                dateFormat="dd-mm-yy"
-                                showIcon
-                            />
-                        }
+                    {/* ==== FILE UPLOAD: RELAS ==== */}
+                    <FileField
+                        label="Upload Relas"
+                        value={form.relas}
+                        isLoading={isLoadingData}
+                        onSelect={(e) => handleFileSelect("relas", e)}
                     />
 
-                    {/* Ruang Sidang */}
-                    <InputWrapper
-                        label="Ruang Sidang"
-                        loading={isLoadingData}
-                        children={
-                            <InputText
-                                value={form.ruang_sidang}
-                                onChange={(e) =>
-                                    setForm({ ...form, ruang_sidang: e.target.value })
-                                }
-                                placeholder="Ruang 1 / Ruang Cakra"
-                                className="w-full"
-                            />
-                        }
+                    {/* ==== FILE UPLOAD: GUGATAN ==== */}
+                    <FileField
+                        label="Upload Gugatan"
+                        value={form.gugatan_upload}
+                        isLoading={isLoadingData}
+                        onSelect={(e) => handleFileSelect("gugatan_upload", e)}
                     />
 
-                    {/* Agenda */}
-                    <InputWrapper
-                        label="Agenda"
-                        loading={isLoadingData}
-                        children={
-                            <InputText
-                                value={form.agenda}
-                                onChange={(e) =>
-                                    setForm({ ...form, agenda: e.target.value })
-                                }
-                                placeholder="Agenda Sidang"
-                                className="w-full"
-                            />
-                        }
-                    />
+                    <InputWrapper label="Hari" loading={isLoadingData}>
+                        <InputText
+                            value={form.hari}
+                            onChange={(e) => setForm({ ...form, hari: e.target.value })}
+                            placeholder="Contoh: Senin"
+                            className="w-full"
+                        />
+                    </InputWrapper>
 
-                    {/* Penggugat */}
-                    <InputWrapper
-                        label="Penggugat"
-                        loading={isLoadingData}
-                        children={
-                            <InputText
-                                value={form.penggugat}
-                                onChange={(e) =>
-                                    setForm({ ...form, penggugat: e.target.value })
-                                }
-                                placeholder="Nama Penggugat"
-                                className="w-full"
-                            />
-                        }
-                    />
+                    <InputWrapper label="Tanggal" loading={isLoadingData}>
+                        <Calendar
+                            value={form.tanggal}
+                            onChange={(e) =>
+                                setForm({ ...form, tanggal: e.value as Date | null })
+                            }
+                            className="w-full"
+                            dateFormat="dd-mm-yy"
+                            showIcon
+                        />
+                    </InputWrapper>
 
-                    {/* Tergugat */}
-                    <InputWrapper
-                        label="Tergugat"
-                        loading={isLoadingData}
-                        children={
-                            <InputText
-                                value={form.tergugat}
-                                onChange={(e) =>
-                                    setForm({ ...form, tergugat: e.target.value })
-                                }
-                                placeholder="Nama Tergugat"
-                                className="w-full"
-                            />
-                        }
-                    />
+                    <InputWrapper label="Ruang Sidang" loading={isLoadingData}>
+                        <InputText
+                            value={form.ruang_sidang}
+                            onChange={(e) =>
+                                setForm({ ...form, ruang_sidang: e.target.value })
+                            }
+                            placeholder="Ruang 1 / Ruang Cakra"
+                            className="w-full"
+                        />
+                    </InputWrapper>
 
-                    {/* Nomor Perkara */}
-                    <InputWrapper
-                        label="Nomor Perkara"
-                        loading={isLoadingData}
-                        children={
-                            <InputText
-                                value={form.nomor_perkara}
-                                onChange={(e) =>
-                                    setForm({ ...form, nomor_perkara: e.target.value })
-                                }
-                                placeholder="123/Pdt.G/2025/PN.Mdn"
-                                className="w-full"
-                            />
-                        }
-                    />
+                    <InputWrapper label="Agenda" loading={isLoadingData}>
+                        <InputText
+                            value={form.agenda}
+                            onChange={(e) =>
+                                setForm({ ...form, agenda: e.target.value })
+                            }
+                            placeholder="Agenda Sidang"
+                            className="w-full"
+                        />
+                    </InputWrapper>
 
-                    {/* Tanggal Perkara */}
-                    <InputWrapper
-                        label="Tanggal Perkara"
-                        loading={isLoadingData}
-                        children={
-                            <Calendar
-                                value={form.tanggal_perkara}
-                                onChange={(e) =>
-                                    setForm({
-                                        ...form,
-                                        tanggal_perkara: e.value as Date | null,
-                                    })
-                                }
-                                className="w-full"
-                                dateFormat="dd-mm-yy"
-                                showIcon
-                            />
-                        }
-                    />
+                    <InputWrapper label="Penggugat" loading={isLoadingData}>
+                        <InputTextarea
+                            value={form.penggugat}
+                            onChange={(e) => setForm({ ...form, penggugat: e.target.value })}
+                            rows={3}
+                            placeholder="Nama / Identitas Penggugat"
+                            className="w-full"
+                        />
+                    </InputWrapper>
 
-                    {/* Gugatan */}
-                    <InputWrapper
-                        label="Gugatan"
-                        loading={isLoadingData}
-                        children={
-                            <Dropdown
-                                value={form.gugatan}
-                                options={[
-                                    { label: "Gugatan PMH", value: "Gugatan PMH" },
-                                    { label: "Gugatan Wanprestasi", value: "Gugatan Wanprestasi" },
-                                ]}
-                                onChange={(e) => setForm({ ...form, gugatan: e.value })}
-                                placeholder="Pilih Gugatan"
-                                className="w-full"
-                            />
-                        }
-                    />
+                    <InputWrapper label="Tergugat" loading={isLoadingData}>
+                        <InputTextarea
+                            value={form.tergugat}
+                            onChange={(e) => setForm({ ...form, tergugat: e.target.value })}
+                            rows={3}
+                            placeholder="Nama / Identitas Tergugat"
+                            className="w-full"
+                        />
+                    </InputWrapper>
 
-                    {/* Pihak */}
-                    <InputWrapper
-                        label="Pihak"
-                        loading={isLoadingData}
-                        children={
-                            <InputTextarea
-                                value={form.pihak}
-                                onChange={(e) => setForm({ ...form, pihak: e.target.value })}
-                                rows={4}
-                                placeholder="Isi pihak..."
-                                className="w-full"
-                            />
-                        }
-                    />
+                    <InputWrapper label="Turut Tergugat" loading={isLoadingData}>
+                        <InputTextarea
+                            value={form.turut_tergugat}
+                            onChange={(e) =>
+                                setForm({ ...form, turut_tergugat: e.target.value })
+                            }
+                            rows={3}
+                            placeholder="Nama / Identitas Turut Tergugat"
+                            className="w-full"
+                        />
+                    </InputWrapper>
 
-                    {/* Panitra Pengganti */}
-                    <InputWrapper
-                        label="Panitra Pengganti"
-                        loading={isLoadingData}
-                        children={
-                            <InputTextarea
-                                value={form.panitra_pengganti}
-                                onChange={(e) =>
-                                    setForm({ ...form, panitra_pengganti: e.target.value })
-                                }
-                                rows={4}
-                                placeholder="Isi panitra pengganti..."
-                                className="w-full"
-                            />
-                        }
+                    <InputWrapper label="Nomor Perkara" loading={isLoadingData}>
+                        <InputText
+                            value={form.nomor_perkara}
+                            onChange={(e) =>
+                                setForm({ ...form, nomor_perkara: e.target.value })
+                            }
+                            placeholder="123/Pdt.G/2025/PN.Mdn"
+                            className="w-full"
+                        />
+                    </InputWrapper>
 
-                    />
+                    <InputWrapper label="Tanggal Perkara" loading={isLoadingData}>
+                        <Calendar
+                            value={form.tanggal_perkara}
+                            onChange={(e) =>
+                                setForm({ ...form, tanggal_perkara: e.value as Date | null })
+                            }
+                            className="w-full"
+                            dateFormat="dd-mm-yy"
+                            showIcon
+                        />
+                    </InputWrapper>
+
+                    <InputWrapper label="Gugatan" loading={isLoadingData}>
+                        <Dropdown
+                            value={form.gugatan}
+                            options={[
+                                { label: "Gugatan PMH", value: "Gugatan PMH" },
+                                { label: "Gugatan Wanprestasi", value: "Gugatan Wanprestasi" },
+                            ]}
+                            onChange={(e) => setForm({ ...form, gugatan: e.value })}
+                            placeholder="Pilih Gugatan"
+                            className="w-full"
+                        />
+                    </InputWrapper>
+
+                    <InputWrapper label="Pihak" loading={isLoadingData}>
+                        <InputTextarea
+                            value={form.pihak}
+                            onChange={(e) => setForm({ ...form, pihak: e.target.value })}
+                            rows={3}
+                            placeholder="Isi pihak..."
+                            className="w-full"
+                        />
+                    </InputWrapper>
+
+                    <InputWrapper label="Panitra Pengganti" loading={isLoadingData}>
+                        <InputTextarea
+                            value={form.panitra_pengganti}
+                            onChange={(e) =>
+                                setForm({ ...form, panitra_pengganti: e.target.value })
+                            }
+                            rows={3}
+                            placeholder="Isi panitra pengganti..."
+                            className="w-full"
+                        />
+                    </InputWrapper>
 
                     <div>
                         <label className="block text-sm font-medium mb-2">Penanggung Jawab</label>
-
                         {form.penanggung_jawab.map((pj, index) => (
                             <div key={index} className="flex gap-2 mb-2">
                                 <InputText
@@ -384,27 +290,28 @@ export default function PerkaraFormEdit() {
                                     type="button"
                                     className="p-button-danger p-button-text"
                                     onClick={() => {
-                                        const newPj = form.penanggung_jawab.filter((_, i) => i !== index);
+                                        const newPj = form.penanggung_jawab.filter(
+                                            (_, i) => i !== index
+                                        );
                                         setForm({ ...form, penanggung_jawab: newPj });
                                     }}
                                 />
                             </div>
                         ))}
-
                         <Button
                             label="Tambah Penanggung Jawab"
                             type="button"
                             icon="pi pi-plus"
                             className="p-button-sm p-button-outlined"
                             onClick={() =>
-                                setForm({ ...form, penanggung_jawab: [...form.penanggung_jawab, ""] })
+                                setForm({
+                                    ...form,
+                                    penanggung_jawab: [...form.penanggung_jawab, ""],
+                                })
                             }
                         />
                     </div>
 
-
-
-                    {/* Submit */}
                     <div className="flex justify-end">
                         <Button
                             type="submit"
@@ -420,7 +327,7 @@ export default function PerkaraFormEdit() {
     );
 }
 
-/* ==== Komponen Wrapper untuk Skeleton ==== */
+/* ==== Wrapper untuk Skeleton ==== */
 function InputWrapper({
     label,
     loading,
@@ -434,6 +341,61 @@ function InputWrapper({
         <div>
             <label className="block text-sm font-medium mb-2">{label}</label>
             {loading ? <Skeleton height="2.5rem" className="w-full" /> : children}
+        </div>
+    );
+}
+
+/* ==== Reusable File Upload dengan Preview ==== */
+function FileField({
+    label,
+    value,
+    onSelect,
+    isLoading,
+}: {
+    label: string;
+    value: File | string | null;
+    onSelect: (e: FileUploadSelectEvent) => void;
+    isLoading: boolean;
+}) {
+    const url =
+        value instanceof File
+            ? URL.createObjectURL(value)
+            : typeof value === "string"
+                ? `${API_BASE}/uploads/${value}`
+                : null;
+
+    return (
+        <div>
+            <label className="block text-sm font-medium mb-2">{label}</label>
+            {isLoading ? (
+                <Skeleton height="2.5rem" className="w-full" />
+            ) : (
+                <>
+                    <FileUpload
+                        mode="basic"
+                        accept=".pdf,.jpg,.jpeg,.png,.webp"
+                        chooseLabel="Pilih File"
+                        className="w-full"
+                        customUpload
+                        auto={false}
+                        onSelect={onSelect}
+                    />
+                    {url && (
+                        <div className="mt-3">
+                            <Button
+                                type="button"
+                                label="Lihat File"
+                                icon="pi pi-external-link"
+                                onClick={() => window.open(url, "_blank")}
+                                className="p-button-outlined p-button-sm"
+                            />
+                            <p className="text-sm text-gray-600 mt-1">
+                                {value instanceof File ? value.name : String(value)}
+                            </p>
+                        </div>
+                    )}
+                </>
+            )}
         </div>
     );
 }

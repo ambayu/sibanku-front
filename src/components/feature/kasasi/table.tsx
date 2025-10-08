@@ -25,28 +25,47 @@ export default function KasasiPage() {
         data={dataKasasi}
         columns={[
           { header: "No", accessor: "no" },
+          { header: "Nomor Kasasi", accessor: "nomor_kasasi" },
           {
-            header: "Nomor Kasasi",
-            accessor: "nomor_kasasi",
-            render: (_: any, row: any) => row.Kasasi?.[0]?.nomor_kasasi || "-"
-          },
-          {
-            header: "Nomor Banding",
+            header: "Nomor Bandings",
             accessor: "nomor_banding",
-            render: (_: any, row: any) => row.Banding?.[0]?.nomor_banding || "-"
+            render: (_: any, row: any) => row.banding?.nomor_banding || "-",
           },
-          { header: "Pihak", accessor: "pihak" },
-          { header: "Panitra Pengganti", accessor: "panitra_pengganti" },
           {
-            header: "Penanggung Jawab", accessor: "penanggung_jawabs",
-
-            render: (value) => value.map((pj: any) => pj.nama).join(", ")
-
-
+            header: "Nomor Perkara",
+            accessor: "nomor_perkara",
+            render: (_: any, row: any) => row.banding?.perkara?.nomor_perkara || "-",
           },
-          { header: "Dibuat Oleh", accessor: "CreatedByUser.name", render: (_: any, row: any) => row.CreatedByUser?.name || "-" },
-          { header: "DiUbah Oleh", accessor: "UpdatedByUser.name", render: (_: any, row: any) => row.UpdatedByUser?.name || "-" },
 
+          {
+            header: "Pihak",
+            accessor: "pihak",
+            render: (_: any, row: any) => row.banding?.perkara?.pihak || "-",
+          },
+          {
+            header: "Panitra Pengganti",
+            accessor: "panitra_pengganti",
+            render: (_: any, row: any) => row.banding?.perkara?.panitra_pengganti || "-",
+          },
+          {
+            header: "Penanggung Jawab",
+            accessor: "penanggung_jawabs",
+            render: (_: any, row: any) =>
+              row.banding?.perkara?.penanggung_jawabs?.length
+                ? row.banding?.perkara?.penanggung_jawabs?.map((pj: any) => pj.nama).join(", ")
+                : "-",
+          },
+          { header: "Status", accessor: "status" },
+          {
+            header: "Dibuat Oleh",
+            accessor: "createdByUser.name",
+            render: (_: any, row: any) => row.createdByUser?.name || "-",
+          },
+          {
+            header: "Diubah Oleh",
+            accessor: "updatedByUser.name",
+            render: (_: any, row: any) => row.updatedByUser?.name || "-",
+          },
           {
             header: "Actions",
             accessor: "id",
@@ -64,7 +83,7 @@ export default function KasasiPage() {
                   }}
 
                   onClick={() => {
-                    route.push(`/admin/kasasi/edit/${row.Kasasi[0].id}`);
+                    route.push(`/admin/kasasi/edit/${row.id}`);
                   }}
                 />
                 <Button
@@ -86,8 +105,8 @@ export default function KasasiPage() {
                       rejectLabel: "Batal",
                       accept: async () => {
                         try {
-                          await remove(row.Kasasi[0].id);
-
+                          await remove(row.id);
+                          mutate();
                           showAlert("success", "Kasasi berhasil dihapus ✅");
                         } catch (error: any) {
                           showAlert("error", error.message || "Gagal menghapus kasasi");
@@ -108,7 +127,7 @@ export default function KasasiPage() {
                   }}
 
                   onClick={() => {
-                    route.push(`/admin/kasasi/view/${row.Kasasi[0].id}`);
+                    route.push(`/admin/kasasi/view/${row.id}`);
                   }}
                 />
 

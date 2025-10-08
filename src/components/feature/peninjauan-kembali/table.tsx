@@ -25,30 +25,50 @@ export default function PeninjauanKembaliPage() {
                 data={dataPeninjauanKembali}
                 columns={[
                     { header: "No", accessor: "no" },
+                    { header: "Nomor Peninjauan Kembali", accessor: "nomor_pk" },
                     {
-                        header: "Nomor PeninjauanKembali",
-                        accessor: "nomor_pk",
-                        render: (_: any, row: any) => row.PeninjauanKembali?.[0]?.nomor_pk || "-"
+                        header: "Nomor Kasasi",
+                        accessor: "nomor_kasasi",
+                        render: (_: any, row: any) => row.kasasi?.nomor_kasasi || "-",
                     },
                     {
                         header: "Nomor Banding",
                         accessor: "nomor_banding",
-                        render: (_: any, row: any) => row.Banding?.[0]?.nomor_banding || "-"
+                        render: (_: any, row: any) => row.kasasi?.banding?.nomor_banding || "-",
                     },
-                    { header: "Nomor Perkara", accessor: "nomor_perkara" },
-
-                    { header: "Pihak", accessor: "pihak" },
-                    { header: "Panitra Pengganti", accessor: "panitra_pengganti" },
                     {
-                        header: "Penanggung Jawab", accessor: "penanggung_jawabs",
-
-                        render: (value) => value.map((pj: any) => pj.nama).join(", ")
-
-
+                        header: "Nomor Perkara",
+                        accessor: "nomor_perkara",
+                        render: (_: any, row: any) => row.kasasi?.banding?.perkara?.nomor_perkara || "-",
                     },
-                    { header: "Dibuat Oleh", accessor: "CreatedByUser.name", render: (_: any, row: any) => row.CreatedByUser?.name || "-" },
-                    { header: "DiUbah Oleh", accessor: "UpdatedByUser.name", render: (_: any, row: any) => row.UpdatedByUser?.name || "-" },
-
+                    {
+                        header: "Pihak",
+                        accessor: "pihak",
+                        render: (_: any, row: any) => row.kasasi?.banding?.perkara?.pihak || "-",
+                    },
+                    {
+                        header: "Panitra Pengganti",
+                        accessor: "panitra_pengganti",
+                        render: (_: any, row: any) => row.kasasi?.banding?.perkara?.panitra_pengganti || "-",
+                    },
+                    {
+                        header: "Penanggung Jawab",
+                        accessor: "penanggung_jawabs",
+                        render: (_: any, row: any) =>
+                            row.kasasi?.banding?.perkara?.penanggung_jawabs.map((pj: any) => pj.nama).join(", ") ??
+                            "-",
+                    },
+                    { header: "Status", accessor: "status" },
+                    {
+                        header: "Dibuat Oleh",
+                        accessor: "createdByUser.name",
+                        render: (_: any, row: any) => row.createdByUser?.name || "-",
+                    },
+                    {
+                        header: "Diubah Oleh",
+                        accessor: "updatedByUser.name",
+                        render: (_: any, row: any) => row.updatedByUser?.name || "-",
+                    },
                     {
                         header: "Actions",
                         accessor: "id",
@@ -66,7 +86,7 @@ export default function PeninjauanKembaliPage() {
                                     }}
 
                                     onClick={() => {
-                                        route.push(`/admin/peninjauan-kembali/edit/${row.PeninjauanKembali[0].id}`);
+                                        route.push(`/admin/peninjauan-kembali/edit/${row.id}`);
                                     }}
                                 />
                                 <Button
@@ -88,8 +108,8 @@ export default function PeninjauanKembaliPage() {
                                             rejectLabel: "Batal",
                                             accept: async () => {
                                                 try {
-                                                    await remove(row.PeninjauanKembali[0].id);
-                                                    mutate();   
+                                                    await remove(row.id);
+                                                    mutate();
                                                     showAlert("success", "PeninjauanKembali berhasil dihapus ✅");
                                                 } catch (error: any) {
                                                     showAlert("error", error.message || "Gagal menghapus peninjauan kembali");
@@ -110,7 +130,7 @@ export default function PeninjauanKembaliPage() {
                                     }}
 
                                     onClick={() => {
-                                        route.push(`/admin/peninjauan-kembali/view/${row.PeninjauanKembali[0].id}`);
+                                        route.push(`/admin/peninjauan-kembali/view/${row.id}`);
                                     }}
                                 />
 

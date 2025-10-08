@@ -9,32 +9,36 @@ import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { create } from "./api";
 import { useAlert } from "@/context/AlertContext";
-import { Dropdown } from 'primereact/dropdown';
+import { Dropdown } from "primereact/dropdown";
+
 export default function PerkaraForm() {
     const { showAlert } = useAlert();
 
-    // gabungkan semua field ke satu object state
     const [form, setForm] = useState({
         surat_permohonan: null as File | null,
+        relas: null as File | null,
+        gugatan_upload: null as File | null,
+
         hari: "",
         tanggal: null as Date | null,
         ruang_sidang: "",
         agenda: "",
         penggugat: "",
         tergugat: "",
+        turut_tergugat: "",
         nomor_perkara: "",
         tanggal_perkara: null as Date | null,
         gugatan: "",
         panitra_pengganti: "",
         pihak: "",
-        penanggung_jawab: [] as string[], // ⬅️ array
+        penanggung_jawab: [] as string[],
     });
 
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleFileSelect = (e: FileUploadSelectEvent) => {
+    const handleFileSelect = (key: keyof typeof form, e: FileUploadSelectEvent) => {
         if (e.files && e.files.length > 0) {
-            setForm({ ...form, surat_permohonan: e.files[0] });
+            setForm({ ...form, [key]: e.files[0] });
         }
     };
 
@@ -56,19 +60,20 @@ export default function PerkaraForm() {
                 }
             });
 
-
             await create(formData);
-            showAlert("success", "Perkara berhasil ditambahkan");
+            showAlert("success", "Perkara berhasil ditambahkan ✅");
 
-            // reset semua field sekali jalan
             setForm({
                 surat_permohonan: null,
+                relas: null,
+                gugatan_upload: null,
                 hari: "",
                 tanggal: null,
                 ruang_sidang: "",
                 agenda: "",
                 penggugat: "",
                 tergugat: "",
+                turut_tergugat: "",
                 nomor_perkara: "",
                 tanggal_perkara: null,
                 gugatan: "",
@@ -77,7 +82,7 @@ export default function PerkaraForm() {
                 penanggung_jawab: [],
             });
         } catch (err: any) {
-            showAlert("error", err.message || "Gagal menambahkan perkara");
+            showAlert("error", err.message || "Gagal menambahkan perkara ❌");
         } finally {
             setIsLoading(false);
         }
@@ -87,18 +92,39 @@ export default function PerkaraForm() {
         <div className="flex justify-center">
             <Card className="w-full">
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                    {/* Upload Surat */}
+                    {/* Upload Surat Permohonan */}
                     <div>
-                        <label className="block text-sm font-medium mb-2">
-                            Upload Surat Permohonan
-                        </label>
+                        <label className="block text-sm font-medium mb-2">Upload Surat Permohonan</label>
                         <FileUpload
                             mode="basic"
                             accept=".pdf,.jpg,.jpeg,.png"
                             chooseLabel="Pilih File"
                             className="w-full"
-                         
-                            onSelect={handleFileSelect}
+                            onSelect={(e) => handleFileSelect("surat_permohonan", e)}
+                        />
+                    </div>
+
+                    {/* Upload Relas */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Upload Relas</label>
+                        <FileUpload
+                            mode="basic"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            chooseLabel="Pilih File"
+                            className="w-full"
+                            onSelect={(e) => handleFileSelect("relas", e)}
+                        />
+                    </div>
+
+                    {/* Upload Gugatan */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Upload Gugatan</label>
+                        <FileUpload
+                            mode="basic"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            chooseLabel="Pilih File"
+                            className="w-full"
+                            onSelect={(e) => handleFileSelect("gugatan_upload", e)}
                         />
                     </div>
 
@@ -118,9 +144,7 @@ export default function PerkaraForm() {
                         <label className="block text-sm font-medium mb-2">Tanggal</label>
                         <Calendar
                             value={form.tanggal}
-                            onChange={(e) =>
-                                setForm({ ...form, tanggal: e.value as Date | null })
-                            }
+                            onChange={(e) => setForm({ ...form, tanggal: e.value as Date | null })}
                             className="w-full"
                             dateFormat="dd-mm-yy"
                             showIcon
@@ -132,9 +156,7 @@ export default function PerkaraForm() {
                         <label className="block text-sm font-medium mb-2">Ruang Sidang</label>
                         <InputText
                             value={form.ruang_sidang}
-                            onChange={(e) =>
-                                setForm({ ...form, ruang_sidang: e.target.value })
-                            }
+                            onChange={(e) => setForm({ ...form, ruang_sidang: e.target.value })}
                             placeholder="Ruang 1 / Ruang Cakra"
                             className="w-full"
                         />
@@ -154,10 +176,11 @@ export default function PerkaraForm() {
                     {/* Penggugat */}
                     <div>
                         <label className="block text-sm font-medium mb-2">Penggugat</label>
-                        <InputText
+                        <InputTextarea
                             value={form.penggugat}
                             onChange={(e) => setForm({ ...form, penggugat: e.target.value })}
-                            placeholder="Nama Penggugat"
+                            rows={3}
+                            placeholder="Nama / Identitas Penggugat"
                             className="w-full"
                         />
                     </div>
@@ -165,22 +188,33 @@ export default function PerkaraForm() {
                     {/* Tergugat */}
                     <div>
                         <label className="block text-sm font-medium mb-2">Tergugat</label>
-                        <InputText
+                        <InputTextarea
                             value={form.tergugat}
                             onChange={(e) => setForm({ ...form, tergugat: e.target.value })}
-                            placeholder="Nama Tergugat"
+                            rows={3}
+                            placeholder="Nama / Identitas Tergugat"
                             className="w-full"
                         />
                     </div>
 
-                    {/* Nomor Perdata */}
+                    {/* Turut Tergugat */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Turut Tergugat</label>
+                        <InputTextarea
+                            value={form.turut_tergugat}
+                            onChange={(e) => setForm({ ...form, turut_tergugat: e.target.value })}
+                            rows={3}
+                            placeholder="Nama / Identitas Turut Tergugat"
+                            className="w-full"
+                        />
+                    </div>
+
+                    {/* Nomor Perkara */}
                     <div>
                         <label className="block text-sm font-medium mb-2">Nomor Perkara</label>
                         <InputText
                             value={form.nomor_perkara}
-                            onChange={(e) =>
-                                setForm({ ...form, nomor_perkara: e.target.value })
-                            }
+                            onChange={(e) => setForm({ ...form, nomor_perkara: e.target.value })}
                             placeholder="123/Pdt.G/2025/PN.Mdn"
                             className="w-full"
                         />
@@ -188,65 +222,60 @@ export default function PerkaraForm() {
 
                     {/* Tanggal Perkara */}
                     <div>
-                        <label className="block text-sm font-medium mb-2">
-                            Tanggal Perkara
-                        </label>
+                        <label className="block text-sm font-medium mb-2">Tanggal Perkara</label>
                         <Calendar
                             value={form.tanggal_perkara}
-                            onChange={(e) =>
-                                setForm({ ...form, tanggal_perkara: e.value as Date | null })
-                            }
+                            onChange={(e) => setForm({ ...form, tanggal_perkara: e.value as Date | null })}
                             className="w-full"
                             dateFormat="dd-mm-yy"
                             showIcon
                         />
                     </div>
 
-                    {/* Gugatan */}
+                    {/* Jenis Gugatan */}
                     <div>
-                        <label className="block text-sm font-medium mb-2">Gugatan</label>
+                        <label className="block text-sm font-medium mb-2">Jenis Gugatan</label>
                         <Dropdown
                             value={form.gugatan}
-                            options={
-                                [
-                                    { label: "Gugatan PMH", value: "Gugatan PMH" },
-                                    { label: "Gugatan Wanprestasi", value: "Gugatan Wanprestasi" },
-                                ]
-                            }
-
-
+                            options={[
+                                { label: "Gugatan PMH", value: "Gugatan PMH" },
+                                { label: "Gugatan Wanprestasi", value: "Gugatan Wanprestasi" },
+                            ]}
                             onChange={(e) => setForm({ ...form, gugatan: e.value })}
-                            placeholder="Pilih Gugatan"
+                            placeholder="Pilih Jenis Gugatan"
                             className="w-full"
                         />
                     </div>
 
+                    {/* Pihak */}
                     <div>
                         <label className="block text-sm font-medium mb-2">Pihak</label>
                         <InputTextarea
                             value={form.pihak}
                             onChange={(e) => setForm({ ...form, pihak: e.target.value })}
-                            rows={4}
-                            placeholder="Isi pihak..."
+                            rows={3}
+                            placeholder="Keterangan pihak..."
                             className="w-full"
                         />
                     </div>
 
+                    {/* Panitra Pengganti */}
                     <div>
                         <label className="block text-sm font-medium mb-2">Panitra Pengganti</label>
                         <InputTextarea
                             value={form.panitra_pengganti}
-                            onChange={(e) => setForm({ ...form, panitra_pengganti: e.target.value })}
-                            rows={4}
-                            placeholder="Isi panitra pengganti..."
+                            onChange={(e) =>
+                                setForm({ ...form, panitra_pengganti: e.target.value })
+                            }
+                            rows={3}
+                            placeholder="Nama Panitra Pengganti"
                             className="w-full"
                         />
                     </div>
 
-
+                    {/* Penanggung Jawab */}
                     <div>
                         <label className="block text-sm font-medium mb-2">Penanggung Jawab</label>
-
                         {form.penanggung_jawab.map((pj, index) => (
                             <div key={index} className="flex gap-2 mb-2">
                                 <InputText
@@ -277,13 +306,15 @@ export default function PerkaraForm() {
                             icon="pi pi-plus"
                             className="p-button-sm p-button-outlined"
                             onClick={() =>
-                                setForm({ ...form, penanggung_jawab: [...form.penanggung_jawab, ""] })
+                                setForm({
+                                    ...form,
+                                    penanggung_jawab: [...form.penanggung_jawab, ""],
+                                })
                             }
                         />
                     </div>
 
-
-                    {/* Tombol Submit */}
+                    {/* Submit */}
                     <div className="flex justify-end">
                         <Button
                             type="submit"
