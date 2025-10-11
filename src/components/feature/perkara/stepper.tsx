@@ -16,6 +16,7 @@ import { Calendar } from "primereact/calendar";
 import { useAlert } from "@/context/AlertContext";
 import { Dropdown } from "primereact/dropdown";
 import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
+import { mutate } from "swr";
 
 type Step = {
     label: string;
@@ -48,6 +49,8 @@ export default function StepperPerkara() {
         skkFile: [] as MultiFileState,
         sptFile: [] as MultiFileState,
         putusan_selaFile: [] as MultiFileState,
+        saksiFile: [] as MultiFileState,
+        bukti_suratFile: [] as MultiFileState,
         putusan_majelisFile: [] as MultiFileState,
         kesimpulanFile: [] as MultiFileState,
         jawabanFile: [] as MultiFileState,
@@ -70,7 +73,7 @@ export default function StepperPerkara() {
 
     const [formCatatan, setFormCatatan] = useState({
         tanggal: null as Date | null,
-        para_pihak: [] as string[],
+        para_pihak: [] as { nama: string }[],
         keterangan: "",
     });
 
@@ -91,12 +94,13 @@ export default function StepperPerkara() {
         }
 
         setFormData((prev: any) => {
+            const pihakList = formCatatan.para_pihak.map((p) => p.nama).filter(Boolean); // ambil nama aja
             if (showModal === "pihak") {
                 return {
                     ...prev,
                     menghadirkan_pihak: [
                         ...prev.menghadirkan_pihak,
-                        { ...formCatatan, para_pihak: JSON.stringify(formCatatan.para_pihak) },
+                        { ...formCatatan, para_pihak: JSON.stringify(pihakList) },
                     ],
                 };
             }
@@ -105,7 +109,7 @@ export default function StepperPerkara() {
                     ...prev,
                     mediasi: [
                         ...prev.mediasi,
-                        { ...formCatatan, para_pihak: JSON.stringify(formCatatan.para_pihak) },
+                        { ...formCatatan, para_pihak: JSON.stringify(pihakList) },
                     ],
                 };
             }
@@ -127,6 +131,8 @@ export default function StepperPerkara() {
             | "replikFile"
             | "duplikFile"
             | "putusan_selaFile"
+            | "bukti_suratFile"
+            | "saksiFile"
             | "putusan_majelisFile"
             | "kesimpulanFile"
     ) => {
@@ -143,7 +149,7 @@ export default function StepperPerkara() {
         }));
     };
 
-    const { data: dataPerkara, isLoading } = findOne(Number(params.id));
+    const { data: dataPerkara, isLoading, mutate } = findOne(Number(params.id));
     console.log(dataPerkara, "dataPerkara");
     // Kirim ke server
     const handleUpdate = async () => {
@@ -168,6 +174,8 @@ export default function StepperPerkara() {
         appendMulti("skkFile", "SKK");
         appendMulti("sptFile", "SPT");
         appendMulti("putusan_selaFile", "PUTUSAN_SELA");
+        appendMulti("bukti_suratFile", "BUKTI_SURAT");
+        appendMulti("saksiFile", "SAKSI");
         appendMulti("putusan_majelisFile", "PUTUSAN_MAJELIS");
         appendMulti("kesimpulanFile", "KESIMPULAN");
         appendMulti("jawabanFile", "JAWABAN");
@@ -186,6 +194,7 @@ export default function StepperPerkara() {
         try {
             await tahapPerkara(Number(params.id), form);
             showAlert("success", "Perkara berhasil diperbarui ✅");
+            mutate(); // refresh data
         } catch (err: any) {
             showAlert("error", err.message || "Gagal update perkara");
         }
@@ -203,6 +212,8 @@ export default function StepperPerkara() {
             | "replikFile"
             | "duplikFile"
             | "putusan_selaFile"
+            | "bukti_suratFile"
+            | "saksiFile"
             | "putusan_majelisFile"
             | "kesimpulanFile",
         serverFieldName: string
@@ -330,6 +341,8 @@ export default function StepperPerkara() {
             jawabanFile: mapMulti(dataPerkara.files?.filter((f: any) => f.tipe === "JAWABAN")),
             replikFile: mapMulti(dataPerkara.files?.filter((f: any) => f.tipe === "REPLIK")),
             duplikFile: mapMulti(dataPerkara.files?.filter((f: any) => f.tipe === "DUPLIK")),
+            saksiFile: mapMulti(dataPerkara.files?.filter((f: any) => f.tipe === "SAKSI")),
+
 
             keputusan: dataPerkara.keputusan || "",
             menghadirkan_pihak:
@@ -852,19 +865,23 @@ export default function StepperPerkara() {
                                         />
                                         <Column
                                             header="Nama Pihak"
-                                            body={(row, opt) => (
+                                            body={(rowData, opt) => (
                                                 <InputText
-                                                    value={row}
+                                                    value={rowData.nama}
                                                     onChange={(e) => {
-                                                        const updated = [...(formCatatan.para_pihak || [])];
-                                                        updated[opt.rowIndex] = e.target.value;
-                                                        setFormCatatan({ ...formCatatan, para_pihak: updated });
+                                                        setFormCatatan((prev) => {
+                                                            const updated = prev.para_pihak.map((p, i) =>
+                                                                i === opt.rowIndex ? { ...p, nama: e.target.value } : p
+                                                            );
+                                                            return { ...prev, para_pihak: updated };
+                                                        });
                                                     }}
                                                     className="w-full"
                                                     placeholder="Nama pihak"
                                                 />
                                             )}
                                         />
+
                                         <Column
                                             header="Aksi"
                                             body={(_, opt) => (
@@ -888,7 +905,7 @@ export default function StepperPerkara() {
                                             icon="pi pi-plus"
                                             className="p-button-sm"
                                             onClick={() => {
-                                                const newList = [...(formCatatan.para_pihak || []), ""];
+                                                const newList = [...(formCatatan.para_pihak || []), { nama: "" }];
                                                 setFormCatatan({ ...formCatatan, para_pihak: newList });
                                             }}
                                         />
@@ -922,19 +939,23 @@ export default function StepperPerkara() {
                                         />
                                         <Column
                                             header="Nama Pihak"
-                                            body={(row, opt) => (
+                                            body={(rowData, opt) => (
                                                 <InputText
-                                                    value={row}
+                                                    value={rowData.nama}
                                                     onChange={(e) => {
-                                                        const updated = [...(formCatatan.para_pihak || [])];
-                                                        updated[opt.rowIndex] = e.target.value;
-                                                        setFormCatatan({ ...formCatatan, para_pihak: updated });
+                                                        setFormCatatan((prev) => {
+                                                            const updated = prev.para_pihak.map((p, i) =>
+                                                                i === opt.rowIndex ? { ...p, nama: e.target.value } : p
+                                                            );
+                                                            return { ...prev, para_pihak: updated };
+                                                        });
                                                     }}
                                                     className="w-full"
                                                     placeholder="Nama pihak"
                                                 />
                                             )}
                                         />
+
                                         <Column
                                             header="Aksi"
                                             body={(_, opt) => (
@@ -958,7 +979,7 @@ export default function StepperPerkara() {
                                             icon="pi pi-plus"
                                             className="p-button-sm"
                                             onClick={() => {
-                                                const newList = [...(formCatatan.para_pihak || []), ""];
+                                                const newList = [...(formCatatan.para_pihak || []), { nama: "" }];
                                                 setFormCatatan({ ...formCatatan, para_pihak: newList });
                                             }}
                                         />
@@ -1219,6 +1240,107 @@ export default function StepperPerkara() {
             ),
         },
 
+        {
+            label: "Bukti Surat",
+            content: (
+                <div>
+                    <h2 className="text-lg font-bold mb-2">📑 Bukti Surat</h2>
+                    <p className="text-gray-600 mb-6">
+                        Unggah dokumen bukti surat di sini...
+                    </p>
+
+                    <input
+                        type="file"
+                        id="bukti_suratFile"
+                        className="hidden"
+                        onChange={(e) => handleFileSelect(e, "bukti_suratFile")}
+                        accept=".pdf,.jpg,.jpeg,.png,.webp"
+                        multiple
+                    />
+                    <label
+                        htmlFor="bukti_suratFile"
+                        className="cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center bg-white text-gray-500 hover:border-[#0B5C4D] transition"
+                    >
+                        <UploadCloud className="h-12 w-12 mb-2 text-gray-400" />
+                        <p className="font-medium">Upload Bukti Surat File (bisa banyak file)</p>
+                        <p className="text-sm">Klik atau drag & drop</p>
+                    </label>
+
+                    {renderMultiPreview(formData.bukti_suratFile, "Bukti Surat File", "bukti_suratFile", "bukti_suratFile")}
+
+                    <div className="flex justify-between mt-10">
+                        <Button
+                            label="Kembali"
+                            className="p-button-secondary"
+                            onClick={() => setCurrentStep(currentStep - 1)}
+                        />
+                        <div className="justify-end gap-4 flex">
+                            <Button
+                                label="Simpan"
+                                className="p-button-warning"
+                                onClick={() => handleUpdate()}
+                            />
+                            <Button
+                                label="Selanjutnya"
+                                className="p-button-warning"
+                                onClick={() => setCurrentStep(currentStep + 1)}
+                            />
+                        </div>
+                    </div>
+                </div>
+            ),
+        },
+
+        {
+            label: "Saksi",
+            content: (
+                <div>
+                    <h2 className="text-lg font-bold mb-2">📑 Saksi</h2>
+                    <p className="text-gray-600 mb-6">
+                        Unggah dokumen saksi di sini...
+                    </p>
+
+                    <input
+                        type="file"
+                        id="saksiFile"
+                        className="hidden"
+                        onChange={(e) => handleFileSelect(e, "saksiFile")}
+                        accept=".pdf,.jpg,.jpeg,.png,.webp"
+                        multiple
+                    />
+                    <label
+                        htmlFor="saksiFile"
+                        className="cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center bg-white text-gray-500 hover:border-[#0B5C4D] transition"
+                    >
+                        <UploadCloud className="h-12 w-12 mb-2 text-gray-400" />
+                        <p className="font-medium">Upload Saksi File (bisa banyak file)</p>
+                        <p className="text-sm">Klik atau drag & drop</p>
+                    </label>
+
+                    {renderMultiPreview(formData.saksiFile, "Saksi File", "saksiFile", "saksiFile")}
+
+                    <div className="flex justify-between mt-10">
+                        <Button
+                            label="Kembali"
+                            className="p-button-secondary"
+                            onClick={() => setCurrentStep(currentStep - 1)}
+                        />
+                        <div className="justify-end gap-4 flex">
+                            <Button
+                                label="Simpan"
+                                className="p-button-warning"
+                                onClick={() => handleUpdate()}
+                            />
+                            <Button
+                                label="Selanjutnya"
+                                className="p-button-warning"
+                                onClick={() => setCurrentStep(currentStep + 1)}
+                            />
+                        </div>
+                    </div>
+                </div>
+            ),
+        },
         // ====== KESIMPULAN (MULTI) ======
         {
             label: "Kesimpulan",

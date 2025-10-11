@@ -9,6 +9,7 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { useAlert } from "@/context/AlertContext";
 import { findOne, updateTahapBanding } from "./api";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { Dropdown } from "primereact/dropdown";
 
 type Step = { label: string; content: React.ReactNode };
 type FileFieldKey = "aktaFile" | "memoriFile" | "kontraFile" | "putusanFile";
@@ -33,6 +34,7 @@ export default function StepperBanding() {
         memoriFile: [] as MultiFileState,
         kontraFile: [] as MultiFileState,
         putusanFile: [] as MultiFileState,
+        keputusan: "",
     });
 
     const { data: dataBanding, mutate } = findOne(Number(params.id));
@@ -61,6 +63,7 @@ export default function StepperBanding() {
                     form.append("files", item.file);
                     form.append("file_tipes", tipe);
                     form.append("file_deskripsis", item.deskripsi || "");
+
                 }
             });
         };
@@ -69,6 +72,8 @@ export default function StepperBanding() {
         appendFiles("memoriFile", "MEMORI");
         appendFiles("kontraFile", "KONTRA");
         appendFiles("putusanFile", "PUTUSAN");
+        form.append("keputusan", formData.keputusan);
+        console.log(formData," formdata");
 
         try {
             await updateTahapBanding(Number(params.id), form);
@@ -104,8 +109,8 @@ export default function StepperBanding() {
                                 <div className="flex items-center gap-2">
                                     <i
                                         className={`pi ${item.file
-                                                ? "pi-cloud-upload text-green-500"
-                                                : "pi-file text-blue-500"
+                                            ? "pi-cloud-upload text-green-500"
+                                            : "pi-file text-blue-500"
                                             }`}
                                     />
                                     <span className="text-sm font-medium">
@@ -214,6 +219,7 @@ export default function StepperBanding() {
             memoriFile: mapFiles(dataBanding.files, "MEMORI"),
             kontraFile: mapFiles(dataBanding.files, "KONTRA"),
             putusanFile: mapFiles(dataBanding.files, "PUTUSAN"),
+            keputusan: dataBanding.keputusan || "",
         });
     }, [dataBanding]);
 
@@ -278,7 +284,66 @@ export default function StepperBanding() {
         { label: "Akta Banding", content: renderStep("aktaFile", "Akta Banding", "AKTA", 1, 2) },
         { label: "Memori Banding", content: renderStep("memoriFile", "Memori Banding", "MEMORI", 2, 3) },
         { label: "Kontra Memori", content: renderStep("kontraFile", "Kontra Memori", "KONTRA", 3, 4) },
-        { label: "Putusan Banding", content: renderStep("putusanFile", "Putusan Banding", "PUTUSAN", 4, null) },
+        {
+            label: "Putusan Banding",
+            content: (
+                <div>
+                    <h2 className="text-lg font-bold mb-2">📑 Putusan Banding</h2>
+                    <p className="text-gray-600 mb-6">Unggah dokumen putusan banding di sini.</p>
+
+                    <input
+                        type="file"
+                        id="putusanFile"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => handleFileSelect(e, "putusanFile")}
+                    />
+                    <label
+                        htmlFor="putusanFile"
+                        className="cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center bg-white text-gray-500 hover:border-[#0B5C4D]"
+                    >
+                        <UploadCloud className="h-12 w-12 mb-2 text-gray-400" />
+                        <p className="font-medium">Upload Putusan Banding</p>
+                        <p className="text-sm">Klik atau drag & drop (bisa banyak file)</p>
+                    </label>
+
+                    {renderMultiPreview(formData.putusanFile, "Putusan Banding", "putusanFile", "PUTUSAN")}
+
+                    {/* ✅ Tambahkan Dropdown Keputusan di sini */}
+                    <div className="mt-6">
+                        <label className="font-medium text-gray-700 mb-2 block">
+                            Keputusan
+                        </label>
+                        <Dropdown
+                            value={formData.keputusan}
+                            options={[
+                                { label: "Menang", value: "menang" },
+                                { label: "Kalah", value: "kalah" },
+                            ]}
+                            onChange={(e) =>
+                                setFormData((prev) => ({ ...prev, keputusan: e.value }))
+                            }
+                            placeholder="Pilih Keputusan"
+                            className="w-full"
+                        />
+                    </div>
+
+                    <div className="flex justify-end gap-4 mt-10">
+                        <Button
+                            label="Simpan"
+                            className="p-button-success"
+                            onClick={() => handleUpdate()}
+                        />
+                        <Button
+                            label="Kembali"
+                            className="p-button-secondary"
+                            onClick={() => setCurrentStep(currentStep - 1)}
+                        />
+                    </div>
+                </div>
+            ),
+        }
+
     ];
 
     return (

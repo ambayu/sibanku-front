@@ -5,22 +5,21 @@ import Stepper from "@/components/ui/Stepper";
 import { UploadCloud } from "lucide-react";
 import { useParams } from "next/navigation";
 import { Button } from "primereact/button";
-import { Skeleton } from "primereact/skeleton";
-import { Dialog } from "primereact/dialog";
 import { InputTextarea } from "primereact/inputtextarea";
 import { useAlert } from "@/context/AlertContext";
-import { findOne, update, updateTahapkasasi,  } from "./api";
+import { findOne, updateTahapkasasi } from "./api";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { Dropdown } from "primereact/dropdown";
 
-type Step = {
-    label: string;
-    content: React.ReactNode;
-};
+type Step = { label: string; content: React.ReactNode };
+type FileFieldKey = "aktaFile" | "memoriFile" | "kontraFile" | "putusanFile";
 
-type FileState = {
+type MultiFileState = {
+    id?: number;
     file: File | null;
     deskripsi: string;
     existing?: string;
-} | null;
+}[];
 
 export default function StepperKasasi() {
     const { showAlert } = useAlert();
@@ -28,210 +27,245 @@ export default function StepperKasasi() {
     const params = useParams();
     const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/uploads";
 
-    // Modal Upload File
-    const [showUploadModal, setShowUploadModal] = useState<
-        null | "aktaFile" | "memoriFile" | "kontraFile" | "putusanFile"
-    >(null);
-
-    const [fileTemp, setFileTemp] = useState<File | null>(null);
-    const [fileDesc, setFileDesc] = useState("");
-
     const [formData, setFormData] = useState({
         nomor_kasasi: "",
-        aktaFile: null as FileState,
-        memoriFile: null as FileState,
-        kontraFile: null as FileState,
-        putusanFile: null as FileState,
+        aktaFile: [] as MultiFileState,
+        memoriFile: [] as MultiFileState,
+        kontraFile: [] as MultiFileState,
+        putusanFile: [] as MultiFileState,
+        keputusan: "", // ✅ Tambahkan state keputusan
     });
 
-    // get data kasasi
-    const { data: dataKasasi, isLoading, mutate } = findOne(Number(params.id));
-    console.log(dataKasasi, "dataKasasi");
+    const { data: dataKasasi, mutate } = findOne(Number(params.id));
 
-    const handleFileSelect = (
-        e: any,
-        field: "aktaFile" | "memoriFile" | "kontraFile" | "putusanFile"
-    ) => {
-        let file: File | null = null;
-        if (e.target?.files) file = e.target.files[0];
-        if (e.files) file = e.files[0];
-        if (file) {
-            setFileTemp(file);
-            setFileDesc("");
-            setShowUploadModal(field);
-        }
+    /** 🟢 PILIH FILE MULTIPLE */
+    const handleFileSelect = (e: any, field: FileFieldKey) => {
+        const files: FileList | undefined = e.target?.files;
+        if (!files || files.length === 0) return;
+        const arr = Array.from(files).map((f) => ({ file: f, deskripsi: "" }));
+        setFormData((prev) => ({
+            ...prev,
+            [field]: [...(prev[field] as MultiFileState), ...arr],
+        }));
     };
 
+    /** 🟢 SIMPAN KE SERVER */
     const handleUpdate = async () => {
         const form = new FormData();
         form.append("nomor_kasasi", formData.nomor_kasasi);
 
-        const appendFile = (key: keyof typeof formData, field: string) => {
-            const data = formData[key] as FileState;
-            if (data?.file) form.append(field, data.file);
-            if (data?.deskripsi) form.append(`${field}_desc`, data.deskripsi);
+        const appendFiles = (key: FileFieldKey, tipe: string) => {
+            const list = formData[key] as MultiFileState;
+            list.forEach((item) => {
+                if (item.file) {
+                    form.append("files", item.file);
+                    form.append("file_tipes", tipe);
+                    form.append("file_deskripsis", item.deskripsi || "");
+                }
+            });
         };
 
-        appendFile("aktaFile", "akta_kasasi");
-        appendFile("memoriFile", "memori_kasasi");
-        appendFile("kontraFile", "kontra_memori");
-        appendFile("putusanFile", "putusan_kasasi");
+        appendFiles("aktaFile", "AKTA");
+        appendFiles("memoriFile", "MEMORI");
+        appendFiles("kontraFile", "KONTRA");
+        appendFiles("putusanFile", "PUTUSAN");
+        form.append("keputusan", formData.keputusan); // ✅ Sertakan keputusan
 
         try {
             await updateTahapkasasi(Number(params.id), form);
             showAlert("success", "Data kasasi berhasil diperbarui ✅");
+            mutate();
         } catch (err: any) {
-            showAlert("error", err.message || "Gagal memperbarui kasasi");
+            console.error(err);
+            showAlert("error", err.message || "Gagal memperbarui kasasi ❌");
         }
     };
 
-    const renderFilePreview = (field: keyof typeof formData, label: string, fieldName: string) => {
-        const data = formData[field] as FileState;
-        if (!data) return null;
-
+    /** 🟢 RENDER PREVIEW FILE */
+    const renderMultiPreview = (
+        list: MultiFileState,
+        label: string,
+        fieldKey: FileFieldKey,
+        tipe: string
+    ) => {
+        if (!list || list.length === 0) return null;
         return (
-            <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
-                {data.file ? (
-                    <div className="flex items-center space-x-2 mb-2 p-2 bg-white rounded">
-                        <i className="pi pi-cloud-upload text-green-500"></i>
-                        <div>
-                            <p className="text-xs text-gray-500">File Baru</p>
-                            <p className="text-sm font-semibold">{data.file.name}</p>
-                        </div>
-                    </div>
-                ) : data.existing ? (
-                    <div className="flex items-center justify-between mb-2 p-2 bg-white rounded">
-                        <div className="flex items-center space-x-2">
-                            <i className="pi pi-file text-blue-500"></i>
-                            <span className="text-sm">{label} tersedia</span>
-                        </div>
-                        <Button
-                            type="button"
-                            label="Lihat"
-                            icon="pi pi-external-link"
-                            onClick={() => window.open(`${API_BASE}/${data.existing}`, "_blank")}
-                            className="p-button-outlined p-button-sm"
-                        />
-                    </div>
-                ) : null}
+            <div className="mt-4 space-y-3">
+                {list.map((item, idx) => {
+                    const url = item.file
+                        ? URL.createObjectURL(item.file)
+                        : item.existing
+                            ? `${API_BASE}/${item.existing}`
+                            : null;
 
-                <div className="text-lg text-gray-600 p-2 bg-white rounded">
-                    <span className="font-medium">Deskripsi:</span> {data.deskripsi || "-"}
-                </div>
+                    return (
+                        <div key={`${fieldKey}-${idx}`} className="border rounded bg-white p-3 shadow-sm">
+                            <ConfirmDialog />
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <i
+                                        className={`pi ${item.file ? "pi-cloud-upload text-green-500" : "pi-file text-blue-500"
+                                            }`}
+                                    />
+                                    <span className="text-sm font-medium">
+                                        {item.file?.name || item.existing || `${label} #${idx + 1}`}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    {url && (
+                                        <Button
+                                            type="button"
+                                            label="Lihat"
+                                            icon="pi pi-external-link"
+                                            onClick={() => window.open(url, "_blank")}
+                                            className="p-button-outlined p-button-sm"
+                                        />
+                                    )}
+                                    <Button
+                                        type="button"
+                                        icon="pi pi-trash"
+                                        className="p-button-text p-button-danger p-button-sm"
+                                        onClick={() =>
+                                            confirmDialog({
+                                                message: "Apakah Anda yakin ingin menghapus file ini?",
+                                                header: "Konfirmasi Hapus",
+                                                icon: "pi pi-exclamation-triangle",
+                                                acceptClassName: "p-button-danger",
+                                                acceptLabel: "Ya, Hapus",
+                                                rejectLabel: "Batal",
+                                                accept: async () => {
+                                                    const fileId = item.id;
+                                                    try {
+                                                        if (fileId) {
+                                                            const res = await fetch(
+                                                                `${process.env.NEXT_PUBLIC_API_URL}/kasasi-file/${fileId}`,
+                                                                { method: "DELETE" }
+                                                            );
+                                                            if (!res.ok)
+                                                                throw new Error("Gagal menghapus file di server");
+                                                        }
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            [fieldKey]: (prev[fieldKey] as MultiFileState).filter(
+                                                                (_, i) => i !== idx
+                                                            ),
+                                                        }));
+                                                    } catch (err) {
+                                                        console.error(err);
+                                                        showAlert("error", "Gagal menghapus file ❌");
+                                                    }
+                                                },
+                                            })
+                                        }
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Deskripsi */}
+                            <div className="mt-2">
+                                <label className="block text-xs text-gray-600 mb-1">
+                                    Deskripsi {label} #{idx + 1}
+                                </label>
+                                <InputTextarea
+                                    rows={2}
+                                    value={item.deskripsi}
+                                    onChange={(e) =>
+                                        setFormData((prev) => {
+                                            const clone = [...(prev[fieldKey] as MultiFileState)];
+                                            clone[idx] = { ...clone[idx], deskripsi: e.target.value };
+                                            return { ...prev, [fieldKey]: clone };
+                                        })
+                                    }
+                                    className="w-full"
+                                    placeholder="Tuliskan deskripsi file ini..."
+                                />
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
         );
     };
 
-    // mapping API → state
+    /** 🟢 MAP API → STATE */
     useEffect(() => {
         if (!dataKasasi) return;
-        const mapFile = (field: string, desc: string) =>
-            field
-                ? {
-                    file: null,
-                    deskripsi: desc || "",
-                    existing: field,
-                }
-                : null;
 
-        setFormData((prev) => ({
-            ...prev,
+        const mapFiles = (
+            files?: { id: number; path: string; deskripsi?: string; tipe?: string }[],
+            tipe?: string
+        ): MultiFileState => {
+            if (!files) return [];
+            return files
+                .filter((f) => f.tipe === tipe)
+                .map((f) => ({
+                    id: f.id,
+                    file: null,
+                    existing: f.path,
+                    deskripsi: f.deskripsi || "",
+                }));
+        };
+
+        setFormData({
             nomor_kasasi: dataKasasi.nomor_kasasi || "",
-            aktaFile: mapFile(dataKasasi.akta_kasasi, dataKasasi.akta_kasasi_desc),
-            memoriFile: mapFile(dataKasasi.memori_kasasi, dataKasasi.memori_kasasi_desc),
-            kontraFile: mapFile(dataKasasi.kontra_memori, dataKasasi.kontra_memori_desc),
-            putusanFile: mapFile(dataKasasi.putusan_kasasi, dataKasasi.putusan_kasasi_desc),
-        }));
+            aktaFile: mapFiles(dataKasasi.files, "AKTA"),
+            memoriFile: mapFiles(dataKasasi.files, "MEMORI"),
+            kontraFile: mapFiles(dataKasasi.files, "KONTRA"),
+            putusanFile: mapFiles(dataKasasi.files, "PUTUSAN"),
+            keputusan: dataKasasi.keputusan || "", // ✅ Map keputusan dari API
+        });
     }, [dataKasasi]);
 
+    /** 🟢 TEMPLATE STEP */
+    const renderStep = (
+        field: FileFieldKey,
+        label: string,
+        tipe: string,
+        current: number,
+        next: number | null
+    ) => (
+        <div>
+            <h2 className="text-lg font-bold mb-2">📑 {label}</h2>
+            <p className="text-gray-600 mb-6">Unggah dokumen {label.toLowerCase()} di sini.</p>
+
+            <input type="file" id={field} multiple className="hidden" onChange={(e) => handleFileSelect(e, field)} />
+            <label
+                htmlFor={field}
+                className="cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center bg-white text-gray-500 hover:border-[#0B5C4D]"
+            >
+                <UploadCloud className="h-12 w-12 mb-2 text-gray-400" />
+                <p className="font-medium">Upload {label}</p>
+                <p className="text-sm">Klik atau drag & drop (bisa banyak file)</p>
+            </label>
+
+            {renderMultiPreview(formData[field] as MultiFileState, label, field, tipe)}
+
+            <div className="flex justify-between mt-10">
+                <Button
+                    label="Kembali"
+                    className="p-button-secondary"
+                    onClick={() => setCurrentStep(Math.max(1, current - 1))}
+                />
+                <div className="flex justify-end gap-4">
+                    <Button label="Simpan" className="p-button-success" onClick={() => handleUpdate()} />
+                    {next && (
+                        <Button
+                            label="Selanjutnya"
+                            className="p-button-warning"
+                            onClick={() => setCurrentStep(next)}
+                        />
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
+    /** 🟢 STEP DEFINITIONS */
     const steps: Step[] = [
-        {
-            label: "Akta Kasasi",
-            content: (
-                <div>
-                    <h2 className="text-lg font-bold mb-2">📑 Akta Kasasi</h2>
-                    <p className="text-gray-600 mb-6">Unggah dokumen akta kasasi di sini.</p>
-
-                    <input type="file" id="aktaFile" className="hidden" onChange={(e) => handleFileSelect(e, "aktaFile")} />
-                    <label
-                        htmlFor="aktaFile"
-                        className="cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center bg-white text-gray-500 hover:border-[#0B5C4D]"
-                    >
-                        <UploadCloud className="h-12 w-12 mb-2 text-gray-400" />
-                        <p className="font-medium">Upload Akta Kasasi</p>
-                        <p className="text-sm">Klik atau drag & drop</p>
-                    </label>
-
-                    {renderFilePreview("aktaFile", "Akta Kasasi", "akta_kasasi")}
-
-                    <div className="flex justify-between mt-10">
-                        <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(1)} />
-                        <div className="flex justify-end gap-4">
-                            <Button label="Simpan" className="p-button-success" onClick={() => handleUpdate()} />
-                            <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(2)} />
-                        </div>
-                    </div>
-                </div>
-            ),
-        },
-        {
-            label: "Memori Kasasi",
-            content: (
-                <div>
-                    <h2 className="text-lg font-bold mb-2">📑 Memori Kasasi</h2>
-                    <p className="text-gray-600 mb-6">Unggah dokumen memori kasasi di sini.</p>
-
-                    <input type="file" id="memoriFile" className="hidden" onChange={(e) => handleFileSelect(e, "memoriFile")} />
-                    <label
-                        htmlFor="memoriFile"
-                        className="cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center bg-white text-gray-500 hover:border-[#0B5C4D]"
-                    >
-                        <UploadCloud className="h-12 w-12 mb-2 text-gray-400" />
-                        <p className="font-medium">Upload Memori Kasasi</p>
-                        <p className="text-sm">Klik atau drag & drop</p>
-                    </label>
-
-                    {renderFilePreview("memoriFile", "Memori Kasasi", "memori_kasasi")}
-
-                    <div className="flex justify-between mt-10">
-                        <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(1)} />
-                        <div className="flex justify-end gap-4">
-                            <Button label="Simpan" className="p-button-success" onClick={() => handleUpdate()} />
-                            <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(3)} />
-                        </div>
-                    </div>
-                </div>
-            ),
-        },
-        {
-            label: "Kontra Memori",
-            content: (
-                <div>
-                    <h2 className="text-lg font-bold mb-2">📑 Kontra Memori Kasasi</h2>
-                    <p className="text-gray-600 mb-6">Unggah dokumen kontra memori di sini.</p>
-
-                    <input type="file" id="kontraFile" className="hidden" onChange={(e) => handleFileSelect(e, "kontraFile")} />
-                    <label
-                        htmlFor="kontraFile"
-                        className="cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center bg-white text-gray-500 hover:border-[#0B5C4D]"
-                    >
-                        <UploadCloud className="h-12 w-12 mb-2 text-gray-400" />
-                        <p className="font-medium">Upload Kontra Memori</p>
-                        <p className="text-sm">Klik atau drag & drop</p>
-                    </label>
-
-                    {renderFilePreview("kontraFile", "Kontra Memori", "kontra_memori")}
-
-                    <div className="flex justify-between mt-10">
-                        <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(2)} />
-                        <div className="flex justify-end gap-4">
-                            <Button label="Simpan" className="p-button-success" onClick={() => handleUpdate()} />
-                            <Button label="Selanjutnya" className="p-button-warning" onClick={() => setCurrentStep(4)} />
-                        </div>
-                    </div>
-                </div>
-            ),
-        },
+        { label: "Akta Kasasi", content: renderStep("aktaFile", "Akta Kasasi", "AKTA", 1, 2) },
+        { label: "Memori Kasasi", content: renderStep("memoriFile", "Memori Kasasi", "MEMORI", 2, 3) },
+        { label: "Kontra Memori", content: renderStep("kontraFile", "Kontra Memori", "KONTRA", 3, 4) },
         {
             label: "Putusan Kasasi",
             content: (
@@ -239,28 +273,58 @@ export default function StepperKasasi() {
                     <h2 className="text-lg font-bold mb-2">📑 Putusan Kasasi</h2>
                     <p className="text-gray-600 mb-6">Unggah dokumen putusan kasasi di sini.</p>
 
-                    <input type="file" id="putusanFile" className="hidden" onChange={(e) => handleFileSelect(e, "putusanFile")} />
+                    <input
+                        type="file"
+                        id="putusanFile"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => handleFileSelect(e, "putusanFile")}
+                    />
                     <label
                         htmlFor="putusanFile"
                         className="cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center bg-white text-gray-500 hover:border-[#0B5C4D]"
                     >
                         <UploadCloud className="h-12 w-12 mb-2 text-gray-400" />
-                        <p className="font-medium">Upload Putusan Kasasi</p>
-                        <p className="text-sm">Klik atau drag & drop</p>
+                        <p className="font-medium">Upload Putusan Banding</p>
+                        <p className="text-sm">Klik atau drag & drop (bisa banyak file)</p>
                     </label>
 
-                    {renderFilePreview("putusanFile", "Putusan Kasasi", "putusan_kasasi")}
+                    {renderMultiPreview(formData.putusanFile, "Putusan Banding", "putusanFile", "PUTUSAN")}
 
-                    <div className="flex justify-between mt-10">
-                        <Button label="Kembali" className="p-button-secondary" onClick={() => setCurrentStep(3)} />
-                        <div className="flex justify-end gap-4">
-                            <Button label="Simpan" className="p-button-success" onClick={() => handleUpdate()} />
-                        </div>
+                    {/* ✅ Tambahkan Dropdown Keputusan di sini */}
+                    <div className="mt-6">
+                        <label className="font-medium text-gray-700 mb-2 block">
+                            Keputusan
+                        </label>
+                        <Dropdown
+                            value={formData.keputusan}
+                            options={[
+                                { label: "Menang", value: "menang" },
+                                { label: "Kalah", value: "kalah" },
+                            ]}
+                            onChange={(e) =>
+                                setFormData((prev) => ({ ...prev, keputusan: e.value }))
+                            }
+                            placeholder="Pilih Keputusan"
+                            className="w-full"
+                        />
+                    </div>
+
+                    <div className="flex justify-end gap-4 mt-10">
+                        <Button
+                            label="Simpan"
+                            className="p-button-success"
+                            onClick={() => handleUpdate()}
+                        />
+                        <Button
+                            label="Kembali"
+                            className="p-button-secondary"
+                            onClick={() => setCurrentStep(currentStep - 1)}
+                        />
                     </div>
                 </div>
             ),
-        },
-    ];
+        }];
 
     return (
         <div className="p-6 bg-[#FFFCF0] min-h-screen rounded-xl">
@@ -276,47 +340,6 @@ export default function StepperKasasi() {
             </div>
 
             <div>{steps[currentStep - 1].content}</div>
-
-            {/* Modal Upload Deskripsi */}
-            <Dialog
-                header="Tambah Deskripsi File"
-                visible={showUploadModal !== null}
-                style={{ width: "30rem" }}
-                modal
-                onHide={() => setShowUploadModal(null)}
-            >
-                <div className="flex flex-col gap-3">
-                    {fileTemp && (
-                        <p className="text-sm text-gray-700">
-                            File: <span className="font-semibold">{fileTemp.name}</span>
-                        </p>
-                    )}
-                    <label className="font-medium">Deskripsi</label>
-                    <InputTextarea
-                        value={fileDesc}
-                        onChange={(e) => setFileDesc(e.target.value)}
-                        rows={3}
-                        placeholder="Tuliskan deskripsi file..."
-                        className="w-full"
-                    />
-                    <div className="flex justify-end gap-2 mt-4">
-                        <Button label="Batal" className="p-button-text" onClick={() => setShowUploadModal(null)} />
-                        <Button
-                            label="Simpan"
-                            onClick={() => {
-                                if (!fileTemp) return;
-                                setFormData((prev) => ({
-                                    ...prev,
-                                    [showUploadModal!]: { file: fileTemp, deskripsi: fileDesc },
-                                }));
-                                setShowUploadModal(null);
-                                setFileTemp(null);
-                                setFileDesc("");
-                            }}
-                        />
-                    </div>
-                </div>
-            </Dialog>
         </div>
     );
 }

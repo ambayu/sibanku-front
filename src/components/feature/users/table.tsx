@@ -55,6 +55,9 @@ export default function UserTable() {
           { header: "Nama", accessor: "name" },
           { header: "Email", accessor: "email" },
           { header: "Username", accessor: "username" },
+          //date format
+          { header: "Terakhir Login", accessor: "last_login", render: (value: string) => value ? new Date(value).toLocaleString("id-ID", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "-" },
+          { header: "Jumlah Login", accessor: "login_count" },
           {
             header: "Role",
             accessor: "roles",
