@@ -161,6 +161,21 @@ export async function updateTahapkasasi(id: number, data: any) {
     }
     return resData;
 }
+export function LaporanOprasional() {
+
+    const fullUrl = `${url}/laporan/operasional`;
+    const { data, error, isLoading } = useSWR(fullUrl, fetcher);
+    return {
+        data: data,
+        message: data?.message,
+        isLoading,
+        isError: !!error,
+        errorMessage: error?.message,
+        statusCode: error?.statusCode,
+        mutate: () => mutate(fullUrl),
+    };
+}
+
 
 
 export async function tahapPerkara(id: number, data: any) {

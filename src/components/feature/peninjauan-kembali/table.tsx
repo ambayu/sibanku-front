@@ -59,6 +59,7 @@ export default function PeninjauanKembaliPage() {
                             "-",
                     },
                     { header: "Status", accessor: "status" },
+                     { header: "Keputusan", accessor: "keputusan" },
                     {
                         header: "Dibuat Oleh",
                         accessor: "createdByUser.name",

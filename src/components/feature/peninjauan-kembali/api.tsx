@@ -22,6 +22,22 @@ const fetcher = async (endpoint: string) => {
     }
     return data;
 };
+export function LaporanOprasional() {
+
+    const fullUrl = `${url}/laporan/operasional`;
+    const { data, error, isLoading } = useSWR(fullUrl, fetcher);
+    console.log(data);
+    return {
+        data: data,
+        message: data?.message,
+        isLoading,
+        isError: !!error,
+        errorMessage: error?.message,
+        statusCode: error?.statusCode,
+        mutate: () => mutate(fullUrl),
+    };
+}
+
 
 // Refresh cache manual
 export function refresh(params: {

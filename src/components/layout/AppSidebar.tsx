@@ -27,7 +27,14 @@ const menuGroups: MenuGroup[] = [
       { name: "Banding", path: "/admin/banding" },
       { name: "Kasasi", path: "/admin/kasasi" },
       { name: "Peninjauan Kembali", path: "/admin/peninjauan-kembali" },
-      { name: "Laporan", path: "/admin/laporan" },
+      {
+        name: "Laporan", children: [
+          { name: "Laporan Perkara", path: "/admin/laporan/perkara" },
+          { name: "Laporan Banding", path: "/admin/laporan/banding" },
+          { name: "Laporan Kasasi", path: "/admin/laporan/kasasi" },
+          { name: "Laporan Peninjauan Kembali", path: "/admin/laporan/peninjauan-kembali" },
+        ]
+      },
     ],
   },
   {
@@ -228,7 +235,7 @@ export default function AppSidebar() {
           {shouldShowText && <span>Logout</span>}
         </button>
 
-    
+
       </div>
     </aside>
   );

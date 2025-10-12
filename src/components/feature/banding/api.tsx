@@ -40,6 +40,23 @@ export function refresh(params: {
     return mutate(`${url}?${queryParams}`);
 }
 
+export function LaporanOprasional() {
+
+    const fullUrl = `${url}/laporan/operasional`;
+    const { data, error, isLoading } = useSWR(fullUrl, fetcher);
+    console.log(data);
+    return {
+        data: data,
+        message: data?.message,
+        isLoading,
+        isError: !!error,
+        errorMessage: error?.message,
+        statusCode: error?.statusCode,
+        mutate: () => mutate(fullUrl),
+    };
+}
+
+
 // Ambil semua data dengan pagination
 export function findAll(page: number, perPage: number, search?: string) {
     const queryParams = new URLSearchParams({

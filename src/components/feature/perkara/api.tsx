@@ -80,6 +80,23 @@ export function RealfindAll(search?: string) {
     };
 }
 
+export function LaporanOprasional() {
+
+    const fullUrl = `${url}/laporan/operasional`;
+    const { data, error, isLoading } = useSWR(fullUrl, fetcher);
+    console.log(data);
+    return {
+        data: data,
+        message: data?.message,
+        isLoading,
+        isError: !!error,
+        errorMessage: error?.message,
+        statusCode: error?.statusCode,
+        mutate: () => mutate(fullUrl),
+    };
+}
+
+
 
 // Ambil 1 data
 export function findOne(id: number) {
@@ -181,18 +198,4 @@ export async function remove(id: number) {
 }
 
 
-export function LaporanPerkara(search?: string) {
 
-    const fullUrl = `${url}/laporan-perkara`;
-    const { data, error, isLoading } = useSWR(fullUrl, fetcher);
-    console.log(data,"asd");
-    return {
-        data: data?.page_data,
-        message: data?.message,
-        isLoading,
-        isError: !!error,
-        errorMessage: error?.message,
-        statusCode: error?.statusCode,
-        mutate: () => mutate(fullUrl),
-    };
-}

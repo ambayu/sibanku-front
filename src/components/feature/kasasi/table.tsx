@@ -56,6 +56,7 @@ export default function KasasiPage() {
                 : "-",
           },
           { header: "Status", accessor: "status" },
+          { header: "Keputusan", accessor: "keputusan" },
           {
             header: "Dibuat Oleh",
             accessor: "createdByUser.name",
