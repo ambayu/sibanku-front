@@ -8,6 +8,7 @@ import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { mutate } from "swr";
 import { useAlert } from "@/context/AlertContext";
 import { Tooltip } from "primereact/tooltip";
+import Can from "@/components/common/Can";
 
 
 
@@ -16,7 +17,6 @@ export default function PeninjauanKembaliPage() {
     const { showAlert } = useAlert();
 
     const { data: dataPeninjauanKembali, isLoading, mutate } = RealfindAll("");
-    console.log(dataPeninjauanKembali, "data peninjauan kembali");
     return (
         <div className="p-6">
             <ConfirmDialog />
@@ -59,7 +59,7 @@ export default function PeninjauanKembaliPage() {
                             "-",
                     },
                     { header: "Status", accessor: "status" },
-                     { header: "Keputusan", accessor: "keputusan" },
+                    { header: "Keputusan", accessor: "keputusan" },
                     {
                         header: "Dibuat Oleh",
                         accessor: "createdByUser.name",
@@ -75,50 +75,52 @@ export default function PeninjauanKembaliPage() {
                         accessor: "id",
                         render: (_: any, row: any) => (
                             <div className="flex gap-2">
-                                <Button
-                                    icon="pi pi-pencil"
-                                    rounded
-                                    text
-                                    size="small"
-                                    severity="info"
-                                    tooltip="Edit PeninjauanKembali"
-                                    tooltipOptions={{
-                                        position: "bottom",
-                                    }}
+                                <Can permission="peninjauan-kembali:manage">
+                                    <Button
+                                        icon="pi pi-pencil"
+                                        rounded
+                                        text
+                                        size="small"
+                                        severity="info"
+                                        tooltip="Edit PeninjauanKembali"
+                                        tooltipOptions={{
+                                            position: "bottom",
+                                        }}
 
-                                    onClick={() => {
-                                        route.push(`/admin/peninjauan-kembali/edit/${row.id}`);
-                                    }}
-                                />
-                                <Button
-                                    icon="pi pi-trash"
-                                    rounded
-                                    text
-                                    tooltip="Hapus PeninjauanKembali"
-                                    tooltipOptions={{
-                                        position: "bottom",
-                                    }}
-                                    size="small"
-                                    severity="danger"
-                                    onClick={() => {
-                                        confirmDialog({
-                                            message: "Apakah Anda yakin ingin menghapus peninjauan kembali ini?",
-                                            header: "Konfirmasi Hapus",
-                                            icon: "pi pi-exclamation-triangle",
-                                            acceptLabel: "Ya, Hapus",
-                                            rejectLabel: "Batal",
-                                            accept: async () => {
-                                                try {
-                                                    await remove(row.id);
-                                                    mutate();
-                                                    showAlert("success", "PeninjauanKembali berhasil dihapus ✅");
-                                                } catch (error: any) {
-                                                    showAlert("error", error.message || "Gagal menghapus peninjauan kembali");
-                                                }
-                                            },
-                                        });
-                                    }}
-                                />
+                                        onClick={() => {
+                                            route.push(`/admin/peninjauan-kembali/edit/${row.id}`);
+                                        }}
+                                    />
+                                    <Button
+                                        icon="pi pi-trash"
+                                        rounded
+                                        text
+                                        tooltip="Hapus PeninjauanKembali"
+                                        tooltipOptions={{
+                                            position: "bottom",
+                                        }}
+                                        size="small"
+                                        severity="danger"
+                                        onClick={() => {
+                                            confirmDialog({
+                                                message: "Apakah Anda yakin ingin menghapus peninjauan kembali ini?",
+                                                header: "Konfirmasi Hapus",
+                                                icon: "pi pi-exclamation-triangle",
+                                                acceptLabel: "Ya, Hapus",
+                                                rejectLabel: "Batal",
+                                                accept: async () => {
+                                                    try {
+                                                        await remove(row.id);
+                                                        mutate();
+                                                        showAlert("success", "PeninjauanKembali berhasil dihapus ✅");
+                                                    } catch (error: any) {
+                                                        showAlert("error", error.message || "Gagal menghapus peninjauan kembali");
+                                                    }
+                                                },
+                                            });
+                                        }}
+                                    />
+                                </Can>
                                 <Button
                                     icon="pi pi-play"
                                     rounded

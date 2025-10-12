@@ -10,6 +10,7 @@ import { useAlert } from "@/context/AlertContext";
 import { findOne, updateTahapBanding } from "./api";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dropdown } from "primereact/dropdown";
+import Can from "@/components/common/Can";
 
 type Step = { label: string; content: React.ReactNode };
 type FileFieldKey = "aktaFile" | "memoriFile" | "kontraFile" | "putusanFile";
@@ -73,7 +74,7 @@ export default function StepperBanding() {
         appendFiles("kontraFile", "KONTRA");
         appendFiles("putusanFile", "PUTUSAN");
         form.append("keputusan", formData.keputusan);
-        console.log(formData," formdata");
+    
 
         try {
             await updateTahapBanding(Number(params.id), form);
@@ -262,11 +263,14 @@ export default function StepperBanding() {
                     onClick={() => setCurrentStep(Math.max(1, current - 1))}
                 />
                 <div className="flex justify-end gap-4">
-                    <Button
-                        label="Simpan"
-                        className="p-button-success"
-                        onClick={() => handleUpdate()}
-                    />
+                    <Can permission="banding:manage">
+
+                        <Button
+                            label="Simpan"
+                            className="p-button-success"
+                            onClick={() => handleUpdate()}
+                        />
+                    </Can>
                     {next && (
                         <Button
                             label="Selanjutnya"
@@ -329,11 +333,13 @@ export default function StepperBanding() {
                     </div>
 
                     <div className="flex justify-end gap-4 mt-10">
-                        <Button
-                            label="Simpan"
-                            className="p-button-success"
-                            onClick={() => handleUpdate()}
-                        />
+                        <Can permission="banding:manage">
+                            <Button
+                                label="Simpan"
+                                className="p-button-success"
+                                onClick={() => handleUpdate()}
+                            />
+                        </Can>
                         <Button
                             label="Kembali"
                             className="p-button-secondary"

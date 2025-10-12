@@ -93,8 +93,8 @@ export default function DashboardPage() {
     };
 
     return (
-      <Card className="p-6 shadow-lg space-y-6">
-        <div className="flex justify-between items-center mb-3">
+      <Card className="p-6 shadow-lg ">
+        <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold text-[#0B5C4D]">{title}</h2>
           <p className="text-gray-600">
             Total Data:{" "}
@@ -107,32 +107,32 @@ export default function DashboardPage() {
         {/* Chart Layout 2 Kolom */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* 🥧 Status */}
-          <Card className="shadow-md p-5">
-            <h3 className="text-lg font-semibold mb-3 text-[#0B5C4D]">
+          <Card className="shadow-md ">
+            <h3 className="text-lg font-semibold text-[#0B5C4D]">
               Berdasarkan Status
             </h3>
-            <Chart type="pie" data={pieData} />
+           <Chart type="pie" data={pieData} style={{ width: "50%", height: "50%", margin: "0 auto" }} />
           </Card>
 
           {/* 📈 Bulan */}
-          <Card className="shadow-md p-5">
-            <h3 className="text-lg font-semibold mb-3 text-[#0B5C4D]">
+          <Card className="shadow-md ">
+            <h3 className="text-lg font-semibold text-[#0B5C4D]">
               Tren per Bulan
             </h3>
             <Chart type="line" data={lineData} options={chartOptions} />
           </Card>
 
           {/* 📊 Keputusan */}
-          <Card className="shadow-md p-5">
-            <h3 className="text-lg font-semibold mb-3 text-[#0B5C4D]">
+          <Card className="shadow-md ">
+            <h3 className="text-lg font-semibold text-[#0B5C4D]">
               Berdasarkan Keputusan
             </h3>
             <Chart type="bar" data={barKeputusan} options={chartOptions} />
           </Card>
 
           {/* 🧑‍💼 Petugas Input */}
-          <Card className="shadow-md p-5">
-            <h3 className="text-lg font-semibold mb-3 text-[#0B5C4D]">
+          <Card className="shadow-md ">
+            <h3 className="text-lg font-semibold text-[#0B5C4D]">
               Aktivitas Petugas Input
             </h3>
             <Chart

@@ -8,6 +8,7 @@ import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { mutate } from "swr";
 import { useAlert } from "@/context/AlertContext";
 import { Tooltip } from "primereact/tooltip";
+import Can from "@/components/common/Can";
 
 
 
@@ -16,7 +17,6 @@ export default function KasasiPage() {
   const { showAlert } = useAlert();
 
   const { data: dataKasasi, isLoading, mutate } = RealfindAll("");
-  console.log(dataKasasi, "data kasasi");
   return (
     <div className="p-6">
       <ConfirmDialog />
@@ -72,50 +72,52 @@ export default function KasasiPage() {
             accessor: "id",
             render: (_: any, row: any) => (
               <div className="flex gap-2">
-                <Button
-                  icon="pi pi-pencil"
-                  rounded
-                  text
-                  size="small"
-                  severity="info"
-                  tooltip="Edit Kasasi"
-                  tooltipOptions={{
-                    position: "bottom",
-                  }}
+                <Can permission="kasasi:manage">
+                  <Button
+                    icon="pi pi-pencil"
+                    rounded
+                    text
+                    size="small"
+                    severity="info"
+                    tooltip="Edit Kasasi"
+                    tooltipOptions={{
+                      position: "bottom",
+                    }}
 
-                  onClick={() => {
-                    route.push(`/admin/kasasi/edit/${row.id}`);
-                  }}
-                />
-                <Button
-                  icon="pi pi-trash"
-                  rounded
-                  text
-                  tooltip="Hapus Kasasi"
-                  tooltipOptions={{
-                    position: "bottom",
-                  }}
-                  size="small"
-                  severity="danger"
-                  onClick={() => {
-                    confirmDialog({
-                      message: "Apakah Anda yakin ingin menghapus kasasi ini?",
-                      header: "Konfirmasi Hapus",
-                      icon: "pi pi-exclamation-triangle",
-                      acceptLabel: "Ya, Hapus",
-                      rejectLabel: "Batal",
-                      accept: async () => {
-                        try {
-                          await remove(row.id);
-                          mutate();
-                          showAlert("success", "Kasasi berhasil dihapus ✅");
-                        } catch (error: any) {
-                          showAlert("error", error.message || "Gagal menghapus kasasi");
-                        }
-                      },
-                    });
-                  }}
-                />
+                    onClick={() => {
+                      route.push(`/admin/kasasi/edit/${row.id}`);
+                    }}
+                  />
+                  <Button
+                    icon="pi pi-trash"
+                    rounded
+                    text
+                    tooltip="Hapus Kasasi"
+                    tooltipOptions={{
+                      position: "bottom",
+                    }}
+                    size="small"
+                    severity="danger"
+                    onClick={() => {
+                      confirmDialog({
+                        message: "Apakah Anda yakin ingin menghapus kasasi ini?",
+                        header: "Konfirmasi Hapus",
+                        icon: "pi pi-exclamation-triangle",
+                        acceptLabel: "Ya, Hapus",
+                        rejectLabel: "Batal",
+                        accept: async () => {
+                          try {
+                            await remove(row.id);
+                            mutate();
+                            showAlert("success", "Kasasi berhasil dihapus ✅");
+                          } catch (error: any) {
+                            showAlert("error", error.message || "Gagal menghapus kasasi");
+                          }
+                        },
+                      });
+                    }}
+                  />
+                </Can>
                 <Button
                   icon="pi pi-play"
                   rounded

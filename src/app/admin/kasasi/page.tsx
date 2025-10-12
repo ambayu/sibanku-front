@@ -1,3 +1,4 @@
+import Can from "@/components/common/Can";
 import TableComponent from "@/components/feature/kasasi/table";
 import { Metadata } from "next";
 import Link from "next/link";
@@ -23,14 +24,16 @@ export default function Kasasi() {
                 Lihat dan kelola data Kasasi di sistem
               </p>
             </div>
-            <Link href="/admin/kasasi/tambah">
-              <button
-                className="px-4 py-2 text-sm font-medium text-white bg-[#0B5C4D] rounded hover:bg-[#094c3f]"
-                type="button"
-              >
-                Tambah Kasasi
-              </button>
-            </Link>
+            <Can permission={"kasasi:manage"}>
+              <Link href="/admin/kasasi/tambah">
+                <button
+                  className="px-4 py-2 text-sm font-medium text-white bg-[#0B5C4D] rounded hover:bg-[#094c3f]"
+                  type="button"
+                >
+                  Tambah Kasasi
+                </button>
+              </Link>
+            </Can>
           </div>
 
           {/* Content */}

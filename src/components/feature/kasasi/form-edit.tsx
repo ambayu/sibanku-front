@@ -22,7 +22,6 @@ export default function KasasiFormEdit() {
 
     const { data: dataKasasi, isLoading: isLoadingKasasi, mutate } = findOne(Number(param.id));
 
-    console.log(dataKasasi, "dataKasasi");
     useEffect(() => {
         if (dataKasasi) {
             setNomorKasasi(dataKasasi.nomor_kasasi);

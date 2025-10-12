@@ -10,6 +10,7 @@ import { useAlert } from "@/context/AlertContext";
 import { findOne, updateTahapkasasi } from "./api";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dropdown } from "primereact/dropdown";
+import Can from "@/components/common/Can";
 
 type Step = { label: string; content: React.ReactNode };
 type FileFieldKey = "aktaFile" | "memoriFile" | "kontraFile" | "putusanFile";
@@ -248,7 +249,13 @@ export default function StepperKasasi() {
                     onClick={() => setCurrentStep(Math.max(1, current - 1))}
                 />
                 <div className="flex justify-end gap-4">
-                    <Button label="Simpan" className="p-button-success" onClick={() => handleUpdate()} />
+                    <Can permission={"kasasi:manage"}>
+                        <Button
+                            label="Simpan"
+                            className="p-button-success"
+                            onClick={() => handleUpdate()}
+                        />
+                    </Can>
                     {next && (
                         <Button
                             label="Selanjutnya"
@@ -311,11 +318,13 @@ export default function StepperKasasi() {
                     </div>
 
                     <div className="flex justify-end gap-4 mt-10">
-                        <Button
-                            label="Simpan"
-                            className="p-button-success"
-                            onClick={() => handleUpdate()}
-                        />
+                        <Can permission={"kasasi:manage"}>
+                            <Button
+                                label="Simpan"
+                                className="p-button-success"
+                                onClick={() => handleUpdate()}
+                            />
+                        </Can>
                         <Button
                             label="Kembali"
                             className="p-button-secondary"

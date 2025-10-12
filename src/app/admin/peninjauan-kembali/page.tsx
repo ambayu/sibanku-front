@@ -1,3 +1,4 @@
+import Can from "@/components/common/Can";
 import TableComponent from "@/components/feature/peninjauan-kembali/table";
 import { Metadata } from "next";
 import Link from "next/link";
@@ -23,14 +24,16 @@ export default function Peninjauan_Kembali() {
                 Lihat dan kelola data Peninjauan Kembali di sistem
               </p>
             </div>
-            <Link href="/admin/peninjauan-kembali/tambah">
-              <button
-                className="px-4 py-2 text-sm font-medium text-white bg-[#0B5C4D] rounded hover:bg-[#094c3f]"
-                type="button"
-              >
-                Tambah Peninjauan Kembali
-              </button>
-            </Link>
+            <Can permission={"peninjauan-kembali:manage"}>
+              <Link href="/admin/peninjauan-kembali/tambah">
+                <button
+                  className="px-4 py-2 text-sm font-medium text-white bg-[#0B5C4D] rounded hover:bg-[#094c3f]"
+                  type="button"
+                >
+                  Tambah Peninjauan Kembali
+                </button>
+              </Link>
+            </Can>
           </div>
 
           {/* Content */}

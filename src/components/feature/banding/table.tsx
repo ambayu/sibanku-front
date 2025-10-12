@@ -8,6 +8,7 @@ import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { mutate } from "swr";
 import { useAlert } from "@/context/AlertContext";
 import { Tooltip } from "primereact/tooltip";
+import Can from "@/components/common/Can";
 
 
 
@@ -16,7 +17,6 @@ export default function BandingPage() {
   const { showAlert } = useAlert();
 
   const { data: dataBanding, isLoading, mutate } = RealfindAll("");
-  console.log(dataBanding);
   return (
     <div className="p-6">
       <ConfirmDialog />
@@ -25,7 +25,7 @@ export default function BandingPage() {
         data={dataBanding}
         columns={[
           { header: "No", accessor: "no" },
-          { header: "Nomor Banding", accessor: "nomor_banding"},
+          { header: "Nomor Banding", accessor: "nomor_banding" },
           { header: "Nomor Perkara", accessor: "nomor_perkara", render: (_: any, row: any) => row.perkara?.nomor_perkara || "-" },
           { header: "Pihak", accessor: "pihak", render: (_: any, row: any) => row.perkara?.pihak || "-" },
           { header: "Panitra Pengganti", accessor: "panitra_pengganti", render: (_: any, row: any) => row.perkara?.panitra_pengganti || "-" },
@@ -44,51 +44,53 @@ export default function BandingPage() {
             accessor: "id",
             render: (_: any, row: any) => (
               <div className="flex gap-2">
-                <Button
-                  icon="pi pi-pencil"
-                  rounded
-                  text
-                  size="small"
-                  severity="info"
-                  tooltip="Edit Banding"
-                  tooltipOptions={{
-                    position: "bottom",
-                  }}
+                <Can permission="banding:manage">
+                  <Button
+                    icon="pi pi-pencil"
+                    rounded
+                    text
+                    size="small"
+                    severity="info"
+                    tooltip="Edit Banding"
+                    tooltipOptions={{
+                      position: "bottom",
+                    }}
 
-                  onClick={() => {
-                    route.push(`/admin/banding/edit/${row.id}`);
-                  }}
-                />
-                <Button
-                  icon="pi pi-trash"
-                  rounded
-                  text
-                  tooltip="Hapus Banding"
-                  tooltipOptions={{
-                    position: "bottom",
-                  }}
-                  size="small"
-                  severity="danger"
-                  onClick={() => {
-                    confirmDialog({
-                      message: "Apakah Anda yakin ingin menghapus banding ini?",
-                      header: "Konfirmasi Hapus",
-                      icon: "pi pi-exclamation-triangle",
-                      acceptLabel: "Ya, Hapus",
-                      rejectLabel: "Batal",
-                      accept: async () => {
-                        try {
-                          await remove(row.id);
-                          mutate();
+                    onClick={() => {
+                      route.push(`/admin/banding/edit/${row.id}`);
+                    }}
+                  />
+                  <Button
+                    icon="pi pi-trash"
+                    rounded
+                    text
+                    tooltip="Hapus Banding"
+                    tooltipOptions={{
+                      position: "bottom",
+                    }}
+                    size="small"
+                    severity="danger"
+                    onClick={() => {
+                      confirmDialog({
+                        message: "Apakah Anda yakin ingin menghapus banding ini?",
+                        header: "Konfirmasi Hapus",
+                        icon: "pi pi-exclamation-triangle",
+                        acceptLabel: "Ya, Hapus",
+                        rejectLabel: "Batal",
+                        accept: async () => {
+                          try {
+                            await remove(row.id);
+                            mutate();
 
-                          showAlert("success", "Banding berhasil dihapus ✅");
-                        } catch (error: any) {
-                          showAlert("error", error.message || "Gagal menghapus banding");
-                        }
-                      },
-                    });
-                  }}
-                />
+                            showAlert("success", "Banding berhasil dihapus ✅");
+                          } catch (error: any) {
+                            showAlert("error", error.message || "Gagal menghapus banding");
+                          }
+                        },
+                      });
+                    }}
+                  />
+                </Can>
                 <Button
                   icon="pi pi-play"
                   rounded

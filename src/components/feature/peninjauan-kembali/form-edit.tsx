@@ -13,7 +13,6 @@ import { RealfindAll } from "../kasasi/api";
 export default function PeninjauanKembaliFormEdit() {
     const { showAlert } = useAlert();
     const { data: dataPerkara, isLoading: isLoadingPerkara } = RealfindAll("");
-    console.log(dataPerkara, "dataPerkara");
     const param = useParams();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +21,6 @@ export default function PeninjauanKembaliFormEdit() {
 
     const { data: dataPeninjauanKembali, isLoading: isLoadingPeninjauanKembali, mutate } = findOne(Number(param.id));
 
-    console.log(dataPeninjauanKembali, "dataPeninjauanKembali");
     useEffect(() => {
         if (dataPeninjauanKembali) {
             setNomorPeninjauanKembali(dataPeninjauanKembali.nomor_pk);

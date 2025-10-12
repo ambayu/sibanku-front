@@ -13,7 +13,6 @@ import { Skeleton } from "primereact/skeleton";
 export default function BandingFormEdit() {
     const { showAlert } = useAlert();
     const { data: dataPerkara, isLoading: isLoadingPerkara } = RealfindAll();
-    console.log(dataPerkara, "dataPerkara");
     const param = useParams();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +21,6 @@ export default function BandingFormEdit() {
 
     const { data: dataBanding, isLoading: isLoadingBanding, mutate } = findOne(Number(param.id));
 
-    console.log(dataBanding, "dataBanding");
     useEffect(() => {
         if (dataBanding) {
             setNomorBanding(dataBanding.nomor_banding);

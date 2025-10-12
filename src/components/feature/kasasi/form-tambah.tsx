@@ -12,7 +12,6 @@ import { findAll } from "../banding/api";
 export default function KasasiForm() {
     const { showAlert } = useAlert();
     const { data: dataKasasi, isLoading: isLoadingKasasi } = findAll(1, 1000);
-    console.log(dataKasasi, "dataKasi banding");
     const [isLoading, setIsLoading] = useState(false);
     const [nomorKasasi, setNomorKasasi] = useState("");
     const [selectedId, setSelectedId] = useState<number | null>(null);

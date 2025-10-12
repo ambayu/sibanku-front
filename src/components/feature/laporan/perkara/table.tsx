@@ -11,7 +11,6 @@ export default function LaporanOperasionalTable() {
     const { showAlert } = useAlert();
     const { data, isLoading } = LaporanOprasional();
 
-    console.log(data, "data laporan operasional");
 
     if (isLoading)
         return (

@@ -11,7 +11,6 @@ import { RealfindAll } from "../kasasi/api";
 export default function PeninjauanKembaliForm() {
     const { showAlert } = useAlert();
     const { data: dataPeninjauanKembali, isLoading: isLoadingPeninjauanKembali } = RealfindAll("");
-    console.log(dataPeninjauanKembali, "dataPeninjauanKembali----");
     const [isLoading, setIsLoading] = useState(false);
     const [nomorPeninjauanKembali, setNomorPeninjauanKembali] = useState("");
     const [selectedId, setSelectedId] = useState<number | null>(null);

@@ -17,6 +17,7 @@ import { useAlert } from "@/context/AlertContext";
 import { Dropdown } from "primereact/dropdown";
 import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 import { mutate } from "swr";
+import Can from "@/components/common/Can";
 
 type Step = {
     label: string;
@@ -150,7 +151,7 @@ export default function StepperPerkara() {
     };
 
     const { data: dataPerkara, isLoading, mutate } = findOne(Number(params.id));
-    console.log(dataPerkara, "dataPerkara");
+ 
     // Kirim ke server
     const handleUpdate = async () => {
         const form = new FormData();
@@ -587,11 +588,13 @@ export default function StepperPerkara() {
                             onClick={() => setCurrentStep(currentStep - 1)}
                         />
                         <div className="flex justify-end gap-4">
-                            <Button
-                                label="Simpan"
-                                className="p-button-success"
-                                onClick={() => handleUpdate()}
-                            />
+                            <Can permission="perkara:manage">
+                                <Button
+                                    label="Simpan"
+                                    className="p-button-success"
+                                    onClick={() => handleUpdate()}
+                                />
+                            </Can>
                             <Button
                                 label="Selanjutnya"
                                 className="p-button-warning"
@@ -664,11 +667,13 @@ export default function StepperPerkara() {
                             onClick={() => setCurrentStep(currentStep - 1)}
                         />
                         <div className="flex gap-4">
-                            <Button
-                                label="Simpan"
-                                className="p-button-success"
-                                onClick={() => handleUpdate()}
-                            />
+                            <Can permission="perkara:manage">
+                                <Button
+                                    label="Simpan"
+                                    className="p-button-success"
+                                    onClick={() => handleUpdate()}
+                                />
+                            </Can>
                             <Button
                                 label="Selanjutnya"
                                 className="p-button-warning"
@@ -1007,10 +1012,12 @@ export default function StepperPerkara() {
                                     className="p-button-text"
                                     onClick={() => setShowModal(null)}
                                 />
-                                <Button
-                                    label="Simpan"
-                                    onClick={handleTambahCatatan}
-                                />
+                                <Can permission="perkara:manage">
+                                    <Button
+                                        label="Simpan"
+                                        onClick={handleTambahCatatan}
+                                    />
+                                </Can>
                             </div>
                         </div>
                     </Dialog>
@@ -1022,11 +1029,13 @@ export default function StepperPerkara() {
                             onClick={() => setCurrentStep(currentStep - 1)}
                         />
                         <div className="flex gap-4">
-                            <Button
-                                label="Simpan"
-                                className="p-button-success"
-                                onClick={() => handleUpdate()}
-                            />
+                            <Can permission="perkara:manage">
+                                <Button
+                                    label="Simpan"
+                                    className="p-button-success"
+                                    onClick={() => handleUpdate()}
+                                />
+                            </Can>
                             <Button
                                 label="Selanjutnya"
                                 className="p-button-warning"
@@ -1072,11 +1081,13 @@ export default function StepperPerkara() {
                             onClick={() => setCurrentStep(currentStep - 1)}
                         />
                         <div className="justify-end gap-4 flex">
-                            <Button
-                                label="Simpan"
-                                className="p-button-warning"
-                                onClick={() => handleUpdate()}
-                            />
+                            <Can permission="perkara:manage">
+                                <Button
+                                    label="Simpan"
+                                    className="p-button-warning"
+                                    onClick={() => handleUpdate()}
+                                />
+                            </Can>
                             <Button
                                 label="Selanjutnya"
                                 className="p-button-warning"
@@ -1122,11 +1133,14 @@ export default function StepperPerkara() {
                             onClick={() => setCurrentStep(currentStep - 1)}
                         />
                         <div className="justify-end gap-4 flex">
-                            <Button
-                                label="Simpan"
-                                className="p-button-warning"
-                                onClick={() => handleUpdate()}
-                            />
+                            <Can permission="perkara:manage">
+
+                                <Button
+                                    label="Simpan"
+                                    className="p-button-warning"
+                                    onClick={() => handleUpdate()}
+                                />
+                            </Can>
                             <Button
                                 label="Selanjutnya"
                                 className="p-button-warning"
@@ -1172,11 +1186,14 @@ export default function StepperPerkara() {
                             onClick={() => setCurrentStep(currentStep - 1)}
                         />
                         <div className="justify-end gap-4 flex">
-                            <Button
-                                label="Simpan"
-                                className="p-button-warning"
-                                onClick={() => handleUpdate()}
-                            />
+                            <Can permission="perkara:manage">
+
+                                <Button
+                                    label="Simpan"
+                                    className="p-button-warning"
+                                    onClick={() => handleUpdate()}
+                                />
+                            </Can>
                             <Button
                                 label="Selanjutnya"
                                 className="p-button-warning"
@@ -1224,11 +1241,14 @@ export default function StepperPerkara() {
                             onClick={() => setCurrentStep(currentStep - 1)}
                         />
                         <div className="justify-end gap-4 flex">
-                            <Button
-                                label="Simpan"
-                                className="p-button-warning"
-                                onClick={() => handleUpdate()}
-                            />
+                            <Can permission="perkara:manage">
+
+                                <Button
+                                    label="Simpan"
+                                    className="p-button-warning"
+                                    onClick={() => handleUpdate()}
+                                />
+                            </Can>
                             <Button
                                 label="Selanjutnya"
                                 className="p-button-warning"
@@ -1275,11 +1295,14 @@ export default function StepperPerkara() {
                             onClick={() => setCurrentStep(currentStep - 1)}
                         />
                         <div className="justify-end gap-4 flex">
-                            <Button
-                                label="Simpan"
-                                className="p-button-warning"
-                                onClick={() => handleUpdate()}
-                            />
+                            <Can permission="perkara:manage">
+
+                                <Button
+                                    label="Simpan"
+                                    className="p-button-warning"
+                                    onClick={() => handleUpdate()}
+                                />
+                            </Can>
                             <Button
                                 label="Selanjutnya"
                                 className="p-button-warning"
@@ -1326,11 +1349,14 @@ export default function StepperPerkara() {
                             onClick={() => setCurrentStep(currentStep - 1)}
                         />
                         <div className="justify-end gap-4 flex">
-                            <Button
-                                label="Simpan"
-                                className="p-button-warning"
-                                onClick={() => handleUpdate()}
-                            />
+                            <Can permission="perkara:manage">
+
+                                <Button
+                                    label="Simpan"
+                                    className="p-button-warning"
+                                    onClick={() => handleUpdate()}
+                                />
+                            </Can>
                             <Button
                                 label="Selanjutnya"
                                 className="p-button-warning"
@@ -1377,11 +1403,14 @@ export default function StepperPerkara() {
                             onClick={() => setCurrentStep(currentStep - 1)}
                         />
                         <div className="flex justify-end gap-4">
-                            <Button
-                                label="Simpan"
-                                className="p-button-warning"
-                                onClick={() => handleUpdate()}
-                            />
+                            <Can permission="perkara:manage">
+
+                                <Button
+                                    label="Simpan"
+                                    className="p-button-warning"
+                                    onClick={() => handleUpdate()}
+                                />
+                            </Can>
                             <Button
                                 label="Selanjutnya"
                                 className="p-button-warning"
@@ -1441,11 +1470,14 @@ export default function StepperPerkara() {
                     </div>
 
                     <div className="flex justify-end gap-4 mt-10">
-                        <Button
-                            label="Simpan"
-                            className="p-button-secondary"
-                            onClick={() => handleUpdate()}
-                        />
+                        <Can permission="perkara:manage">
+
+                            <Button
+                                label="Simpan"
+                                className="p-button-secondary"
+                                onClick={() => handleUpdate()}
+                            />
+                        </Can>
                         <Button
                             label="Kembali"
                             className="p-button-secondary"
