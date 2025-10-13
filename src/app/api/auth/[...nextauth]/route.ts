@@ -11,7 +11,7 @@ const handler = NextAuth({
             },
             async authorize(credentials) {
                 try {
-                    console.log("Credentials input:", credentials);
+                    console.log("Credentials input:", `${process.env.NEXT_PUBLIC_API_URL}/auth/login`);
                     // 1. Login → ambil token
                     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
                         method: "POST",
