@@ -49,25 +49,25 @@ export default function LoginPage() {
           className="drop-shadow-md"
         />
         <Image
-          src="/images/logo-sibankum.png"
+          src="/images/sibankum.png"
           alt="Logo SIBANKUM"
-          width={160}
+          width={230}
           height={55}
           className="drop-shadow-md"
         />
       </div>
 
       {/* Konten utama */}
-      <div className="relative z-10 flex flex-col lg:flex-row w-full max-w-4xl px-6">
+      <div className="relative z-10 flex flex-col lg:flex-row w-full max-w-5xl px-6">
         {/* Kiri */}
         <div className="flex-1 flex flex-col justify-center items-center text-center pr-0 lg:pr-8 mb-10 lg:mb-0">
           {/* 🔹 Foto Wali Kota di atas tulisan */}
           <div className="">
             <Image
-              src="/images/pak-wali.png" // foto Wali Kota & Wakil Wali Kota
+              src="/images/wali.png" // foto Wali Kota & Wakil Wali Kota
               alt="Wali Kota & Wakil Wali Kota Medan"
-              width={380}
-              height={160}
+              width={580}
+              height={660}
               className="rounded-md drop-shadow-md object-contain"
             />
           </div>
