@@ -29,7 +29,7 @@ const handler = NextAuth({
                     if (!res.ok || !token) return null;
 
                     // 2. Cek profile dari /auth/me
-                    const meRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+                    const meRes = await fetch(`${process.env.BACK_END_URL}/auth/me`, {
                         headers: { Authorization: `Bearer ${token}` },
                     });
 
