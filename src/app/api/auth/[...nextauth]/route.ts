@@ -11,7 +11,7 @@ const handler = NextAuth({
             },
             async authorize(credentials) {
                 try {
-                    console.log("🔍 Fetching:", `${process.env.NEXT_PUBLIC_API_URL}/auth/login`);
+                    console.log("🔍 Fetching:", `http://127.0.0.1:4000/auth/login`);
                     // 1. Login → ambil token
                     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
                         method: "POST",
