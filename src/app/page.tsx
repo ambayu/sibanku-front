@@ -28,7 +28,6 @@ export default function LoginPage() {
       showAlert("success", "Login berhasil ✅, selamat datang 👋");
       setTimeout(() => router.push("/admin"), 1200);
     } else {
-      console.log("🔍 Fetching:", `${process.env.NEXT_PUBLIC_API_URL}/auth/login`);
       showAlert("error", "Login gagal ❌, periksa username & password.");
     }
 
