@@ -71,7 +71,7 @@ export default function PerkaraFormEdit() {
     // helper untuk preview file
     const fileUrl = (path?: string | File | null) => {
         if (path instanceof File) return URL.createObjectURL(path);
-        if (typeof path === "string" && path) return `${API_BASE}/uploads/${path}`;
+        if (typeof path === "string" && path) return `${API_BASE}/${path}`;
         return null;
     };
 
@@ -361,7 +361,7 @@ function FileField({
         value instanceof File
             ? URL.createObjectURL(value)
             : typeof value === "string"
-                ? `${API_BASE}/uploads/${value}`
+                ? `${API_BASE}/${value}`
                 : null;
 
     return (
