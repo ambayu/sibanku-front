@@ -8,7 +8,6 @@ import { LaporanOprasional } from "../../peninjauan-kembali/api";
 
 export default function LaporanOperasionalPKTable() {
   const { data, isLoading } = LaporanOprasional();
-    console.log(data, "data laporan operasional pk");
   if (isLoading)
     return (
       <div className="flex justify-center items-center h-64">

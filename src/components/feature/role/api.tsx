@@ -2,7 +2,6 @@ import useSWR, { mutate } from "swr";
 import { getSession } from "next-auth/react";
 
 const url = process.env.NEXT_PUBLIC_API_URL + "/role";
-console.log(url);
 
 // Fetcher dengan Bearer Token
 const fetcher = async (endpoint: string) => {

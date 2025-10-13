@@ -68,7 +68,6 @@ export function RealfindAll(search?: string) {
     }
     const fullUrl = `${url}/all${queryParams}`;
     const { data, error, isLoading } = useSWR(fullUrl, fetcher);
-    console.log(data);
     return {
         data: data?.page_data,
         message: data?.message,
@@ -84,7 +83,6 @@ export function LaporanOprasional() {
 
     const fullUrl = `${url}/laporan/operasional`;
     const { data, error, isLoading } = useSWR(fullUrl, fetcher);
-    console.log(data);
     return {
         data: data,
         message: data?.message,
