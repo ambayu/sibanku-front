@@ -11,7 +11,6 @@ const handler = NextAuth({
             },
             async authorize(credentials) {
                 try {
-                    console.log("Credentials input:", `${process.env.BACK_END_URL}/auth/login`);
                     // 1. Login → ambil token
                     const res = await fetch(`${process.env.BACK_END_URL}/auth/login`, {
                         method: "POST",
@@ -23,7 +22,6 @@ const handler = NextAuth({
                     });
 
                     const data = await res.json();
-                    console.log("Login response:", data);
 
                     const token = data?.page_data?.token;
                     if (!res.ok || !token) return null;
@@ -34,7 +32,6 @@ const handler = NextAuth({
                     });
 
                     const meData = await meRes.json();
-                    console.log("Profile response:", meData);
 
                     if (!meRes.ok) return null;
 
